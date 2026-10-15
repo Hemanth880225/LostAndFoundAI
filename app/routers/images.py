@@ -10,6 +10,19 @@ from sqlalchemy.orm import Session
 from app.db.database import get_db
 from app.db.models import ItemImage, ItemReport
 
+
+import logging
+
+from app.ai.clip_model import MODEL_NAME
+from app.ai.image_embeddings import encode_image
+from app.services.embedding_service import save_embedding
+
+logger = logging.getLogger(__name__)
+
+
+
+
+
 router = APIRouter(
     prefix="/api/reports",
     tags=["Images"],
@@ -102,6 +115,32 @@ async def upload_image(
         db.add(record)
         db.commit()
         db.refresh(record)
+
+        embedding_status = "pending"
+
+        try:
+            vector = encode_image(destination)
+
+            save_embedding(
+                db=db,
+                report_id=report_id,
+                image_id=record.id,
+                embedding_type="image",
+                vector=vector,
+                model_name=MODEL_NAME,
+            )
+
+            embedding_status = "ready"
+
+        except Exception:
+            logger.exception(
+                "Image uploaded, but embedding generation failed "
+                "for image_id=%s",
+                record.id,
+            )
+
+
+            
 
     except Exception:
         db.rollback()

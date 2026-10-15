@@ -17,6 +17,7 @@ def normalize_text(value: str | None) -> str:
     )
 
 
+
 def text_similarity(a: str, b: str) -> float:
     """
     Baseline lexical similarity.

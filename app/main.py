@@ -6,8 +6,10 @@ from fastapi import FastAPI
 from app.db.database import Base, engine
 from app.db import models  # Registers ItemReport with Base.metadata
 from app.routers.reports import router as reports_router
-
 from app.routers.images import router as images_router
+from app.routers.claims import router as claims_router
+
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -25,6 +27,7 @@ app = FastAPI(
 app.include_router(reports_router)
 app.include_router(reports_router)
 app.include_router(images_router)
+app.include_router(claims_router)
 
 
 
