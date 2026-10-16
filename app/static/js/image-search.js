@@ -359,7 +359,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="report-info">
               <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
                 <h3>${Foundly.escape(m.item_name)}</h3>
-                <span class="similarity-pill">${Foundly.escape(m.match_score)}% match</span>
+                <span class="similarity-pill">Match score: ${Foundly.escape(m.match_score)}/100</span>
               </div>
               <p>${Foundly.escape(m.category)}${m.color ? ' · ' + Foundly.escape(m.color) : ''}</p>
               <div class="report-location">

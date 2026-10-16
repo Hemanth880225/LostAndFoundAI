@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 
 from app.ai.image_embeddings import encode_image
 from app.ai.ranking import location_similarity, time_similarity
-from app.ai.similarity import normalized_similarity
+from app.ai.similarity import cosine_similarity, normalized_similarity
 from app.ai.text_embeddings import encode_text
 from app.db.models import ItemImage, ItemReport
 from app.extensions.attribute_matching.extractor import (
@@ -18,6 +18,8 @@ from app.extensions.attribute_matching.extractor import (
 from app.extensions.attribute_matching.matcher import (
     calculate_composite_match_score,
     compare_attributes,
+    compute_category_compatibility,
+    resolve_canonical_object_type,
 )
 from app.extensions.attribute_matching.models import ItemAttributeRecord
 from app.extensions.attribute_matching.schemas import (
@@ -30,6 +32,34 @@ from app.extensions.attribute_matching.schemas import (
 from app.services.matching_service import get_or_create_report_image_vectors
 
 logger = logging.getLogger(__name__)
+
+
+def calibrate_clip_visual_similarity(cos_sim: float) -> float:
+    """
+    Calibrate raw CLIP cosine similarity into an honest visual match percentage [0, 100].
+
+    Raw CLIP embeddings of physical objects in typical environments exhibit an ambient
+    noise floor around cos ~ 0.55 - 0.65 due to table surfaces, lighting, and generic shapes.
+
+    Calibration intervals:
+    - cos <= 0.55: 0.0%
+    - 0.55 < cos <= 0.65: 0.0% - 15.0% (ambient noise floor)
+    - 0.65 < cos <= 0.78: 15.0% - 42.0% (superficial / cross-object similarity)
+    - 0.78 < cos <= 0.88: 42.0% - 75.0% (moderately strong visual similarity)
+    - cos > 0.88: 75.0% - 100.0% (genuine visual identity / identical item)
+    """
+    if cos_sim <= 0.55:
+        return 0.0
+    elif cos_sim <= 0.65:
+        return round(((cos_sim - 0.55) / 0.10) * 15.0, 2)
+    elif cos_sim <= 0.78:
+        return round(15.0 + ((cos_sim - 0.65) / 0.13) * 27.0, 2)
+    elif cos_sim <= 0.88:
+        return round(42.0 + ((cos_sim - 0.78) / 0.10) * 33.0, 2)
+    else:
+        ratio = min(1.0, (cos_sim - 0.88) / 0.12)
+        return round(75.0 + ratio * 25.0, 2)
+
 
 
 def get_or_create_attributes(db: Session, report: ItemReport) -> ItemAttributes:
@@ -166,6 +196,25 @@ def search_by_attributes(
         features_to_add = [f.strip().capitalize() for f in request.distinctive_features.split(",") if f.strip()]
         merged_query_attrs.distinctive_features.extend(features_to_add)
 
+    user_specified_category = bool(request.category and request.category.strip())
+    user_specified_text = bool(query_text and query_text.strip())
+
+    # Resolve Query Canonical Type
+    if user_specified_category or user_specified_text:
+        query_canonical_type = resolve_canonical_object_type(
+            category=merged_query_attrs.category if user_specified_category else None,
+            item_name="",
+            description=query_text,
+        )
+    elif query_image_attrs and query_image_attrs.confidence_scores.get("category", 0.0) >= 0.75:
+        query_canonical_type = resolve_canonical_object_type(
+            category=query_image_attrs.category,
+            item_name="",
+            description="",
+        )
+    else:
+        query_canonical_type = "unknown"
+
     # 2. Retrieve Candidate Reports
     statement = select(ItemReport).where(ItemReport.status == "active")
     if request.target_type:
@@ -187,9 +236,24 @@ def search_by_attributes(
     for candidate in candidates:
         cand_attrs = get_or_create_attributes(db, candidate)
 
+        # Resolve Candidate Canonical Type using category, item_name, description
+        cand_canonical_type = resolve_canonical_object_type(
+            category=cand_attrs.category,
+            item_name=candidate.item_name,
+            description=candidate.description,
+        )
+
+        cat_compat, cat_tier, cat_reason = compute_category_compatibility(
+            type_a=query_canonical_type,
+            type_b=cand_canonical_type,
+            raw_cat_a=merged_query_attrs.category,
+            raw_cat_b=cand_attrs.category,
+        )
+
         # Enforce Hard Filters
-        if "category" in hard_filter_set and merged_query_attrs.category:
-            if not cand_attrs.category or cand_attrs.category.lower() != merged_query_attrs.category.lower():
+        if "category" in hard_filter_set and (merged_query_attrs.category or query_canonical_type != "unknown"):
+            # Require at least related compatibility (cat_compat >= 0.50). Incompatible items (< 0.50) are excluded.
+            if cat_compat < 0.50:
                 continue
 
         if "primary_color" in hard_filter_set and merged_query_attrs.primary_color:
@@ -208,8 +272,13 @@ def search_by_attributes(
             if not cand_attrs.material or cand_attrs.material.lower() != merged_query_attrs.material.lower():
                 continue
 
-        # Compare Attributes
-        attr_score, attr_meta, explanation = compare_attributes(merged_query_attrs, cand_attrs)
+        # Compare Attributes with contextual canonical types
+        attr_score, attr_meta, explanation = compare_attributes(
+            attrs1=merged_query_attrs,
+            attrs2=cand_attrs,
+            canonical_type1=query_canonical_type,
+            canonical_type2=cand_canonical_type,
+        )
 
         # Visual Score (from query photos if present)
         visual_score = None
@@ -221,16 +290,17 @@ def search_by_attributes(
         if query_image_vectors and cand_image_pairs:
             cand_vectors = [vec for _, vec in cand_image_pairs]
             sim_matrix = [
-                [normalized_similarity(q, c) for c in cand_vectors]
+                [cosine_similarity(q, c) for c in cand_vectors]
                 for q in query_image_vectors
             ]
             max_sim = max(max(row) for row in sim_matrix)
             query_best_matches = [max(row) for row in sim_matrix]
             coverage_sim = sum(query_best_matches) / len(query_best_matches)
-            visual_sim = (0.80 * max_sim) + (0.20 * coverage_sim)
-            visual_score = round(visual_sim * 100, 2)
+            raw_visual_sim = (0.80 * max_sim) + (0.20 * coverage_sim)
+            visual_score = calibrate_clip_visual_similarity(raw_visual_sim)
 
-            if visual_score >= 70.0:
+            # Only generate visual appearance reason if genuine visual match (>= 65%) and category is at least related
+            if visual_score >= 65.0 and cat_compat >= 0.30:
                 explanation.reasons.insert(0, f"Similar overall appearance ({visual_score:.0f}% visual match)")
 
         # Text Score (from query text if present)
@@ -238,18 +308,26 @@ def search_by_attributes(
         if query_text_vec is not None:
             from app.services.matching_service import get_or_create_text_embedding
             cand_text_vec = get_or_create_text_embedding(db, candidate)
-            text_sim = normalized_similarity(query_text_vec, cand_text_vec)
-            text_score = round(text_sim * 100, 2)
+            raw_text_cos = cosine_similarity(query_text_vec, cand_text_vec)
+            text_score = round(max(0.0, raw_text_cos) * 100, 2)
 
         has_distinctive = len(explanation.shared_distinctive_features) > 0
 
-        # Calculate final composite match score
+        # Calculate final composite match score with category gating
         composite_score = calculate_composite_match_score(
             visual_score=visual_score,
             text_score=text_score,
             attribute_score=attr_score,
             has_distinctive_match=has_distinctive,
+            category_compatibility=cat_compat,
         )
+
+        # Quality cutoff: do not include items if match score is less than min_score (default 30.0%)
+        # or if the item belongs to an incompatible category when query type is known
+        if composite_score < request.min_score:
+            continue
+        if request.min_score >= 10.0 and query_canonical_type != "unknown" and cat_compat <= 0.05:
+            continue
 
         best_image_url = (
             f"/{best_cand_image_path}"

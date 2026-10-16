@@ -20,9 +20,32 @@ logger = logging.getLogger(__name__)
 TAXONOMY_CATEGORIES = [
     "Backpack", "Handbag", "Suitcase", "Duffel Bag", "Tote Bag",
     "Water Bottle", "Smartphone", "Laptop", "Tablet", "Wallet",
-    "Umbrella", "Keys", "Earphones", "Headphones", "Watch",
+    "Umbrella", "Keys", "Earphones", "Neckband", "Headphones", "Watch",
     "Glasses", "Lunchbox", "Book", "Charger", "Clothing", "Other",
 ]
+
+CATEGORY_PROMPTS_MAP: Dict[str, str] = {
+    "Earphones": "a photo of in-ear wireless earbuds with charging case or in-ear headphones",
+    "Neckband": "a photo of bluetooth neckband earphones with neck wire or neck band",
+    "Headphones": "a photo of over-ear or on-ear headphones with a headband",
+    "Charger": "a photo of a wall charger power adapter plug or charging cable",
+    "Laptop": "a photo of a laptop computer",
+    "Smartphone": "a photo of a smartphone or mobile phone",
+    "Tablet": "a photo of a tablet computer or iPad",
+    "Backpack": "a photo of a backpack or rucksack",
+    "Handbag": "a photo of a handbag, purse or shoulder bag",
+    "Suitcase": "a photo of a suitcase or luggage trolley",
+    "Duffel Bag": "a photo of a duffel bag or gym sports bag",
+    "Water Bottle": "a photo of a water bottle, tumbler or flask",
+    "Glasses": "a photo of eyeglasses, spectacles or sunglasses",
+    "Book": "a photo of a book or notebook",
+    "Wallet": "a photo of a wallet or purse",
+    "Watch": "a photo of a wrist watch or smartwatch",
+    "Keys": "a photo of keys or keychain",
+    "Umbrella": "a photo of an umbrella",
+    "Lunchbox": "a photo of a lunchbox or food container",
+    "Clothing": "a photo of clothing or jacket",
+}
 
 TAXONOMY_SHAPES = [
     "Rectangular", "Circular", "Oval", "Cylindrical", "Square", "Rounded", "Irregular",
@@ -121,15 +144,47 @@ def extract_attributes_from_text(
 
     # 1. Category
     inferred_category = None
-    if category and category.strip():
-        inferred_category = category.strip().title()
+    category_stripped = category.strip() if category else ""
+    is_broad_category = category_stripped.lower() in ("other", "electronics", "miscellaneous", "item", "")
+
+    if category_stripped and not is_broad_category:
+        inferred_category = category_stripped.title()
         scores["category"] = 0.95
     else:
-        for cat in TAXONOMY_CATEGORIES:
-            if re.search(rf"\b{re.escape(cat.lower())}\b", lower_text):
-                inferred_category = cat
-                scores["category"] = 0.85
+        # Check for specific keywords in text
+        KEYWORD_CATEGORY_MAP = [
+            (r"\b(?:neckband|neck\s*band)\b", "Neckband"),
+            (r"\b(?:earbuds?|airpods?|tws|in-ear\s*buds?)\b", "Earphones"),
+            (r"\b(?:charger|power\s*adapter|charging\s*brick|wall\s*charger|adapter)\b", "Charger"),
+            (r"\b(?:charging\s*cable|type-c\s*cable|lightning\s*cable|usb\s*cable)\b", "Charger"),
+            (r"\b(?:duffel\s*bags?|duffels?)\b", "Duffel Bag"),
+            (r"\b(?:handbags?|purses?|tote\s*bags?)\b", "Handbag"),
+            (r"\b(?:backpacks?|rucksacks?|knapsacks?|daypacks?|bags?|college\s*bags?|school\s*bags?)\b", "Backpack"),
+            (r"\b(?:laptop|notebook|macbook|chromebook)\b", "Laptop"),
+            (r"\b(?:eyeglasses|glasses|spectacles|sunglasses)\b", "Glasses"),
+            (r"\b(?:longbook|notebook|textbook|spiral\s*book|diary)\b", "Book"),
+            (r"\b(?:water\s*bottle|flask|tumbler|thermos|sipper)\b", "Water Bottle"),
+            (r"\b(?:smartphone|mobile\s*phone|iphone|galaxy\s*phone)\b", "Smartphone"),
+        ]
+
+        for pat, cat_name in KEYWORD_CATEGORY_MAP:
+            if re.search(pat, lower_text):
+                inferred_category = cat_name
+                scores["category"] = 0.95
                 break
+
+        if not inferred_category:
+            for cat in TAXONOMY_CATEGORIES:
+                if cat.lower() in ("other", "clothing"):
+                    continue
+                if re.search(rf"\b{re.escape(cat.lower())}\b", lower_text):
+                    inferred_category = cat
+                    scores["category"] = 0.85
+                    break
+
+        if not inferred_category and category_stripped:
+            inferred_category = category_stripped.title()
+            scores["category"] = 0.60
 
     # 2. Colors: Primary, Secondary, and Multicolor
     # 2. Colors: Primary, Secondary, and Multicolor
@@ -424,10 +479,11 @@ def extract_attributes_from_image(
         processor, model, device = get_clip_components()
 
         # Categories
-        cat_prompts = [f"a photo of a {c.lower()}" for c in TAXONOMY_CATEGORIES]
+        cat_keys = list(CATEGORY_PROMPTS_MAP.keys())
+        cat_prompts = list(CATEGORY_PROMPTS_MAP.values())
         cat_res = _run_clip_zeroshot(img, cat_prompts, processor, model, device)
-        if cat_res and cat_res[1] >= 0.28:
-            category = TAXONOMY_CATEGORIES[cat_res[0]]
+        if cat_res and cat_res[1] >= 0.25:
+            category = cat_keys[cat_res[0]]
             scores["category"] = round(cat_res[1], 2)
 
         # Shapes

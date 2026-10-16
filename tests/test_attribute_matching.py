@@ -1,6 +1,7 @@
 """Comprehensive unit, API, integration, and benchmark evaluation suite for Attribute-Based AI Matching."""
 
 import io
+import json
 from datetime import date
 from unittest.mock import patch
 
@@ -28,6 +29,8 @@ from app.extensions.attribute_matching.extractor import (
 from app.extensions.attribute_matching.matcher import (
     calculate_composite_match_score,
     compare_attributes,
+    compute_category_compatibility,
+    resolve_canonical_object_type,
 )
 from app.extensions.attribute_matching.models import ItemAttributeRecord
 from app.extensions.attribute_matching.schemas import (
@@ -35,6 +38,7 @@ from app.extensions.attribute_matching.schemas import (
     ItemAttributes,
 )
 from app.extensions.attribute_matching.service import (
+    calibrate_clip_visual_similarity,
     get_or_create_attributes,
     search_by_attributes,
 )
@@ -348,7 +352,7 @@ def test_api_attribute_search_soft_versus_hard_filters(api_client, test_db):
     # 1. Soft filter: Search for Backpack
     soft_resp = api_client.post(
         "/api/attributes/search",
-        json={"category": "Backpack", "hard_filters": []},
+        json={"category": "Backpack", "hard_filters": [], "min_score": 0.0},
     )
     assert soft_resp.status_code == 200
     soft_data = soft_resp.json()
@@ -529,3 +533,390 @@ def test_ranking_benchmark_with_labelled_pairs(test_db):
     assert metrics["mrr"] >= 0.85  # Target found at rank 1 in both queries
     assert metrics["precision_at_1"] == 1.0  # Top rank is always the ground truth
     assert metrics["recall_at_3"] == 1.0  # All ground truth targets retrieved in top 3
+
+
+# ---------------------------------------------------------------------------
+# 6. REGRESSION TESTS: METADATA CONFIDENCE & MULTIPART/FORM SEARCH
+# ---------------------------------------------------------------------------
+
+def test_regression_confidence_scores_with_string_metadata(test_db):
+    """
+    Regression test: Ensure ItemAttributes and get_or_create_attributes can safely
+    handle records whose confidence_scores dictionary contains string metadata or
+    provenance tags (e.g. 'source': 'pdf_and_expert_curation') without ValidationError.
+    """
+    report = ItemReport(
+        report_type="found",
+        item_name="Imported WROGN Backpack",
+        category="Backpack",
+        color="Dark Blue/Black",
+        description="Blue and black backpack found in room 302.",
+        event_date=date.today(),
+        location_text="Room 302",
+        status="active",
+    )
+    test_db.add(report)
+    test_db.commit()
+    test_db.refresh(report)
+
+    # Manually persist attribute record with string metadata in confidence_scores
+    record = ItemAttributeRecord(
+        report_id=report.id,
+        category="Backpack",
+        primary_color="Black",
+        secondary_color="Blue",
+        shape="Rectangular",
+        size_category="Medium",
+        material="Fabric/Canvas",
+        confidence_scores={"overall": 0.95, "source": "pdf_and_expert_curation"},
+        raw_attributes={},
+    )
+    test_db.add(record)
+    test_db.commit()
+
+    # get_or_create_attributes must load successfully without float parsing error
+    attrs = get_or_create_attributes(test_db, report)
+    assert attrs.category == "Backpack"
+    assert attrs.confidence_scores["source"] == "pdf_and_expert_curation"
+    assert attrs.confidence_scores["overall"] == 0.95
+
+
+def test_api_attribute_search_multipart_form_regression(api_client, test_db):
+    """
+    Regression test: Reproduce the exact form submission from the Photo Search page
+    (/search/image) sending form data with text, category, color, shape,
+    size, material, and distinctive features against reports with metadata in confidence_scores.
+    Must return 200 OK (not 500 Internal Server Error).
+    """
+    # Create report with string metadata in confidence_scores
+    rep = ItemReport(
+        report_type="found",
+        item_name="Found Black Wildcraft Backpack",
+        category="Backpack",
+        color="Black",
+        description="Black rectangular backpack with red stripes.",
+        event_date=date.today(),
+        location_text="Library",
+        status="active",
+    )
+    test_db.add(rep)
+    test_db.commit()
+    test_db.refresh(rep)
+
+    record = ItemAttributeRecord(
+        report_id=rep.id,
+        category="Backpack",
+        primary_color="Black",
+        shape="Rectangular",
+        size_category="Medium",
+        material="Fabric",
+        distinctive_features=["red stripes"],
+        confidence_scores={"overall": 0.95, "source": "pdf_and_expert_curation"},
+        raw_attributes={},
+    )
+    test_db.add(record)
+    test_db.commit()
+
+    # Send form data matching browser submission
+    form_data = {
+        "target_type": "found",
+        "query_text": "backpack",
+        "category": "Backpack",
+        "primary_color": "Black",
+        "shape": "Rectangular",
+        "size_category": "Medium",
+        "material": "Fabric",
+        "distinctive_features": "stripes",
+    }
+
+    resp = api_client.post("/api/attributes/search", data=form_data)
+    assert resp.status_code == 200, f"Expected 200, got {resp.status_code}: {resp.text}"
+    data = resp.json()
+    assert data["candidate_count"] >= 1
+    assert data["matches"][0]["report_id"] == rep.id
+    assert data["matches"][0]["match_score"] > 50.0
+    assert "explanation" in data["matches"][0]
+
+
+def test_api_attribute_search_empty_results_no_500(api_client, test_db):
+    """Verify searching an empty database or non-matching strict filter returns 200 with empty list."""
+    form_data = {
+        "target_type": "found",
+        "category": "NonExistentCategoryXYZ",
+        "hard_filters": json.dumps(["category"]),
+    }
+    resp = api_client.post("/api/attributes/search", data=form_data)
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["candidate_count"] == 0
+    assert data["matches"] == []
+
+
+# ---------------------------------------------------------------------------
+# 5. OVERMATCHING PREVENTION & CATEGORY GATING BENCHMARK (TESTS A - J)
+# ---------------------------------------------------------------------------
+
+def test_scenario_a_earbuds_vs_earbuds_high_confidence():
+    """Test A: Identical/compatible earbuds pair achieves strong score (>75) and matching category."""
+    query_earbuds = ItemAttributes(
+        category="Earbuds",
+        primary_color="White",
+        shape="Oval",
+        size_category="Small",
+    )
+    cand_earbuds = ItemAttributes(
+        category="Earphones",
+        primary_color="White",
+        shape="Oval",
+        size_category="Small",
+    )
+    score, meta, explanation = compare_attributes(
+        query_earbuds, cand_earbuds,
+        canonical_type1="audio.earbuds",
+        canonical_type2="audio.earbuds",
+    )
+    assert meta["category_compatibility"] == 1.0
+    assert "Matching category (Earbuds)" in explanation.reasons
+
+    composite = calculate_composite_match_score(
+        visual_score=92.0,
+        text_score=85.0,
+        attribute_score=score,
+        category_compatibility=meta["category_compatibility"],
+    )
+    assert composite >= 75.0, f"Expected >75 for matching earbuds, got {composite}"
+
+
+def test_scenario_b_earbuds_vs_neckband_separated_score():
+    """Test B: Related audio devices (earbuds vs neckband) receive ~10-40 score and related tier."""
+    query_earbuds = ItemAttributes(
+        category="Earbuds",
+        primary_color="White",
+        shape="Oval",
+        size_category="Small",
+    )
+    cand_neckband = ItemAttributes(
+        category="Earphones",
+        primary_color="Black",
+        secondary_color="White",
+        shape="Curved",
+        size_category="Small",
+    )
+    score, meta, explanation = compare_attributes(
+        query_earbuds, cand_neckband,
+        canonical_type1="audio.earbuds",
+        canonical_type2="audio.neckband",
+    )
+    assert meta["category_compatibility"] == 0.40
+    assert meta["category_tier"] == "related"
+    assert any("Related audio category" in r for r in explanation.reasons)
+    # Ensure neckband does NOT falsely claim matching color scheme
+    assert not any("Matching color scheme" in r for r in explanation.reasons)
+
+    composite = calculate_composite_match_score(
+        visual_score=35.0,
+        attribute_score=score,
+        category_compatibility=meta["category_compatibility"],
+    )
+    assert 10.0 <= composite <= 40.0, f"Expected neckband score in [10, 40], got {composite}"
+
+
+def test_scenario_c_earbuds_vs_charger_incompatible():
+    """Test C: Incompatible categories (earbuds vs charger) score <= 10 in soft mode and are gated."""
+    query_earbuds = ItemAttributes(
+        category="Earbuds",
+        primary_color="White",
+        shape="Oval",
+        size_category="Small",
+    )
+    cand_charger = ItemAttributes(
+        category="Charger",
+        primary_color="White",
+        shape="Rectangular",
+        size_category="Small",
+    )
+    score, meta, explanation = compare_attributes(
+        query_earbuds, cand_charger,
+        canonical_type1="audio.earbuds",
+        canonical_type2="power.charger",
+    )
+    assert meta["category_compatibility"] == 0.0
+    assert meta["category_tier"] == "incompatible"
+
+    composite = calculate_composite_match_score(
+        visual_score=45.0,
+        attribute_score=score,
+        category_compatibility=meta["category_compatibility"],
+    )
+    assert composite <= 10.0, f"Expected charger composite score <= 10, got {composite}"
+
+
+def test_scenario_d_compatible_backpacks():
+    """Test D: Compatible backpacks with matching traits achieve high score (>65)."""
+    lost_backpack = ItemAttributes(
+        category="Backpack",
+        primary_color="Grey",
+        secondary_color="Orange",
+        shape="Curved / Rectangular",
+        size_category="Medium",
+    )
+    found_backpack = ItemAttributes(
+        category="Backpack",
+        primary_color="Grey",
+        secondary_color="Orange",
+        shape="Curved / Rectangular",
+        size_category="Medium",
+    )
+    score, meta, explanation = compare_attributes(
+        lost_backpack, found_backpack,
+        canonical_type1="bags.backpack",
+        canonical_type2="bags.backpack",
+    )
+    assert meta["category_compatibility"] == 1.0
+    assert score >= 80.0
+    composite = calculate_composite_match_score(
+        visual_score=85.0,
+        attribute_score=score,
+        category_compatibility=meta["category_compatibility"],
+    )
+    assert composite >= 65.0
+
+
+def test_scenario_e_similar_color_different_object_rejected():
+    """Test E: Same color across incompatible objects does not overmatch."""
+    type1 = resolve_canonical_object_type("Glasses", "Black Spectacles", "")
+    type2 = resolve_canonical_object_type("Laptop", "Black Lenovo ThinkPad", "")
+    compat, tier, _ = compute_category_compatibility(type1, type2)
+    assert compat == 0.0
+    assert tier == "incompatible"
+
+    composite = calculate_composite_match_score(
+        visual_score=35.0,
+        attribute_score=60.0,
+        category_compatibility=compat,
+    )
+    assert composite <= 5.0
+
+
+def test_scenario_f_unknown_attributes_not_penalized():
+    """Test F: Unknown attributes (e.g. capacity or material unspecified) never reduce candidate score."""
+    full_attrs = ItemAttributes(
+        category="Water Bottle",
+        primary_color="Silver",
+        shape="Cylindrical",
+        size_category="Medium",
+        capacity_litres=1.0,
+        material="Stainless Steel",
+    )
+    sparse_attrs = ItemAttributes(
+        category="Water Bottle",
+        primary_color="Silver",
+    )
+    score, meta, _ = compare_attributes(full_attrs, sparse_attrs)
+    assert score >= 90.0, f"Expected >= 90.0 since all specified attributes matched, got {score}"
+
+
+def test_scenario_g_distinctive_features_meaningful_boost():
+    """Test G: Distinctive feature match boosts score noticeably above non-distinctive match."""
+    plain1 = ItemAttributes(category="Backpack", primary_color="Black")
+    plain2 = ItemAttributes(category="Backpack", primary_color="Black")
+    score_plain, _, _ = compare_attributes(plain1, plain2)
+
+    feat1 = ItemAttributes(category="Backpack", primary_color="Black", distinctive_features=["Red Ferrari Keychain"])
+    feat2 = ItemAttributes(category="Backpack", primary_color="Black", distinctive_features=["Red Ferrari Keychain"])
+    score_feat, meta_feat, explanation = compare_attributes(feat1, feat2)
+
+    assert "Matching distinctive feature: Red Ferrari Keychain" in explanation.reasons
+    comp_plain = calculate_composite_match_score(attribute_score=score_plain, has_distinctive_match=False)
+    comp_feat = calculate_composite_match_score(attribute_score=score_feat, has_distinctive_match=True)
+    assert comp_feat > comp_plain
+
+
+def test_scenario_h_empty_search_results_handled_cleanly(test_db):
+    """Test H: Attribute search that matches 0 candidates returns 200 with empty list."""
+    req = AttributeFilterRequest(
+        category="UnicornCarpetMagicItemXYZ",
+        hard_filters=["category"],
+    )
+    res = search_by_attributes(test_db, req)
+    assert res.candidate_count == 0
+    assert len(res.matches) == 0
+
+
+def test_scenario_i_strict_versus_soft_category_filter(test_db):
+    """Test I: Strict category filter excludes incompatible and related candidates, soft mode ranks them lower."""
+    rep_earbuds = ItemReport(
+        report_type="found",
+        item_name="White Earbuds with Case",
+        category="Earphones",
+        color="White",
+        description="Found white wireless earbuds in charging case",
+        location_text="Library",
+        event_date=date.today(),
+        status="active",
+    )
+    rep_charger = ItemReport(
+        report_type="found",
+        item_name="White Fast Charger",
+        category="Charger",
+        color="White",
+        description="Found white 80W wall charger with usb cable",
+        location_text="Cafeteria",
+        event_date=date.today(),
+        status="active",
+    )
+    rep_neckband = ItemReport(
+        report_type="found",
+        item_name="Black Wireless Neckband",
+        category="Earphones",
+        color="Black",
+        description="Found black bluetooth neckband earphones",
+        location_text="Sports Complex",
+        event_date=date.today(),
+        status="active",
+    )
+    test_db.add_all([rep_earbuds, rep_charger, rep_neckband])
+    test_db.commit()
+
+    # Soft search for Earbuds: only qualifying items (score >= 30%) are returned
+    req_soft = AttributeFilterRequest(target_type="found", category="Earbuds")
+    res_soft = search_by_attributes(test_db, req_soft)
+    assert len(res_soft.matches) >= 1
+    # Earbuds should rank #1 with high score
+    assert res_soft.matches[0].report_id == rep_earbuds.id
+    assert res_soft.matches[0].match_score >= 70.0
+    # Incompatible charger (< 30% score) must not be returned in matches
+    assert not any(m.report_id == rep_charger.id for m in res_soft.matches)
+
+    # Strict search with category hard filter
+    req_strict = AttributeFilterRequest(
+        target_type="found", category="Earbuds",
+        hard_filters=["category"],
+    )
+    res_strict = search_by_attributes(test_db, req_strict)
+    # Charger (< 0.50 compat) and Neckband (< 0.50 compat) must be excluded
+    matched_ids = [m.report_id for m in res_strict.matches]
+    assert rep_earbuds.id in matched_ids
+    assert rep_charger.id not in matched_ids
+    assert rep_neckband.id not in matched_ids
+
+
+def test_scenario_j_honest_explanations_no_false_color_or_shape():
+    """Test J: Incompatible object does not get shape/size/color match reasons."""
+    earbuds = ItemAttributes(
+        category="Earbuds", primary_color="White", shape="Oval", size_category="Small"
+    )
+    charger = ItemAttributes(
+        category="Charger", primary_color="White", shape="Oval", size_category="Small"
+    )
+    score, meta, explanation = compare_attributes(
+        earbuds, charger,
+        canonical_type1="audio.earbuds",
+        canonical_type2="power.charger",
+    )
+    # Category is incompatible (0.0 < 0.30)
+    assert meta["category_compatibility"] == 0.0
+    # Because category is incompatible, shape and size should NOT be added as match reasons
+    assert not any("Matching shape" in r for r in explanation.reasons)
+    assert not any("Compatible size" in r for r in explanation.reasons)
+

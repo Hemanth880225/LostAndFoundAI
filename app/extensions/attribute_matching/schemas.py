@@ -94,6 +94,7 @@ class AttributeFilterRequest(BaseModel):
     location_text: Optional[str] = Field(default=None, description="Location search term")
     target_type: Optional[str] = Field(default=None, description="'lost', 'found', or None for all active reports")
     hard_filters: List[str] = Field(default_factory=list, description="List of attributes that MUST strictly match (others act as soft rank boosters)")
+    min_score: float = Field(default=30.0, ge=0.0, le=100.0, description="Minimum match score required to be returned")
     limit: int = Field(default=20, ge=1, le=100)
 
 

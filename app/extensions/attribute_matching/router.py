@@ -89,7 +89,7 @@ async def extract_attributes_endpoint(
             color = body.get("color")
         except Exception:
             pass
-    elif "multipart/form-data" in content_type:
+    elif "multipart/form-data" in content_type or "application/x-www-form-urlencoded" in content_type:
         form = await request.form()
         title = form.get("title") or form.get("item_name")
         description = form.get("description")
@@ -173,7 +173,7 @@ async def search_attributes_endpoint(
     if "application/json" in content_type:
         body = await request.json()
         filter_req = AttributeFilterRequest(**body)
-    elif "multipart/form-data" in content_type:
+    elif "multipart/form-data" in content_type or "application/x-www-form-urlencoded" in content_type:
         form = await request.form()
         query_text = form.get("query_text") or form.get("q")
         category = form.get("category")
