@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% block title %}My Claims & Verification — Foundly{% endblock %}
+
+{% block content %}
+<section class="wrap tracking-page">
+  <div class="page-hero-text">
+    <div class="eyebrow">OWNERSHIP VERIFICATION</div>
+    <h1>Track your claim status</h1>
+    <p class="lead">Check the status of your item recovery claims, review information requests from campus authorities, and upload additional ownership proof.</p>
+  </div>
+
+  <div class="tracking-grid">
+    <!-- Direct Claim Lookup -->
+    <div class="panel tracking-card">
+      <div class="form-section-title">
+        <span class="section-count">📋</span>
+        <div>
+          <h2>Check Claim Verification Status</h2>
+          <p>Enter the numerical Claim ID provided upon claim submission.</p>
+        </div>
+      </div>
+
+      <form id="lookup-claim-form" class="lookup-form">
+        <label class="field">
+          <span>Claim ID</span>
+          <div class="input-with-button">
+            <input type="number" id="input-claim-id" min="1" placeholder="e.g. 1, 2, 5" required>
+            <button type="submit" class="button button-small">View Claim Dossier</button>
+          </div>
+        </label>
+      </form>
+
+      <div class="safe-card" style="margin-top:20px;">
+        <b>How Claim Verification Works</b>
+        <p>1. When you identify your lost belonging in a found-item report, submit a claim with non-public details (serial numbers, private marks, or receipts).<br>
+        2. Designated campus reviewers verify the details.<br>
+        3. If more information is needed, an inquiry is posted to your claim dossier.<br>
+        4. Once approved, you can complete physical handover at a designated campus desk.</p>
+      </div>
+    </div>
+
+    <!-- Saved Claims on Device -->
+    <div class="panel tracking-card">
+      <div class="form-section-title">
+        <span class="section-count">🛡️</span>
+        <div>
+          <h2>Claims submitted from this browser</h2>
+          <p>Recent claims initiated from this device.</p>
+        </div>
+      </div>
+
+      <div id="saved-claims-container">
+        <div class="loading-state">Checking saved claim records…</div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const form = document.querySelector('#lookup-claim-form');
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const id = document.querySelector('#input-claim-id').value.trim();
+    if (id) location.assign(`/claims/${id}`);
+  });
+
+  const container = document.querySelector('#saved-claims-container');
+  const savedClaims = Foundly.storage.getClaims();
+
+  if (!savedClaims.length) {
+    container.innerHTML = `
+      <div class="empty-state" style="padding:24px;border:none;">
+        <span class="placeholder-icon">🔍</span>
+        <h3>No claims saved on this device</h3>
+        <p>To submit a claim, find your lost item in the public directory and click <strong>Make a verified claim</strong>.</p>
+        <a class="button button-small" href="/browse?report_type=found">Browse Found Items</a>
+      </div>
+    `;
+    return;
+  }
+
+  let html = '<div class="saved-items-list">';
+  savedClaims.forEach(cl => {
+    html += `
+      <div class="saved-item-row">
+        <div>
+          <strong>Claim #${cl.id}</strong>
+          <small style="display:block;color:#94a3b8;">Claimant: ${Foundly.escape(cl.claimantName || 'Self')} · Against Found Report #${cl.foundReportId} · ${Foundly.date(cl.date)}</small>
+        </div>
+        <a class="button button-small button-light" href="/claims/${cl.id}">Check Status</a>
+      </div>
+    `;
+  });
+  html += '</div>';
+  container.innerHTML = html;
+});
+</script>
+{% endblock %}

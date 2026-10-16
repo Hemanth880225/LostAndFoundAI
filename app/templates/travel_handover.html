@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+{% block title %}Travel Mode & Safe Handover Finder — Foundly{% endblock %}
+
+{% block head %}
+<!-- Leaflet CSS for interactive mapping -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+{% endblock %}
+
+{% block content %}
+<section class="wrap travel-handover-page">
+  <div class="travel-header">
+    <div class="eyebrow"><span class="eyebrow-icon">📍</span> TRAVEL MODE & SAFE DEPOSIT</div>
+    <h1>Nearby Safe Handover Locations</h1>
+    <p class="lead">Found an item while travelling or on campus? Discover verified police stations, campus security desks, and official handover points nearby.</p>
+  </div>
+
+  <!-- Safety & Responsibility Disclaimer Banner -->
+  <aside class="handover-disclaimer" role="note">
+    <div class="disclaimer-icon">⚠️</div>
+    <div class="disclaimer-body">
+      <strong>Safety First:</strong> Never handle or transport hazardous, dangerous, or suspicious items — immediately notify local emergency services (e.g. <strong>112</strong> / <strong>999</strong> / <strong>911</strong>). Handover recommendations are suggestions based on public directory records. Always consult on-duty staff before depositing found belongings.
+    </div>
+  </aside>
+
+  <!-- Interactive Controls Bar -->
+  <div class="handover-controls-card panel">
+    <div class="controls-row-primary">
+      <!-- GPS Action Button -->
+      <button type="button" id="btn-use-gps" class="button button-gps">
+        <span class="gps-icon">⌖</span>
+        <span id="gps-label">Use my current location</span>
+      </button>
+      
+      <span class="controls-divider-label">or</span>
+
+      <!-- Place / Address Manual Search -->
+      <form id="handover-search-form" class="place-search-form">
+        <div class="search-input-wrapper">
+          <input
+            type="text"
+            id="input-place"
+            placeholder="Search city, address, railway station, or landmark…"
+            autocomplete="off"
+            aria-label="Location search input"
+          >
+          <button type="submit" class="button button-small" id="btn-search-place">Search</button>
+        </div>
+        <div id="geocode-suggestions" class="geocode-dropdown" hidden></div>
+      </form>
+    </div>
+
+    <!-- Active Location Banner & Coordinates Indicator -->
+    <div id="active-location-bar" class="active-location-bar" hidden>
+      <span class="active-loc-icon">📌</span>
+      <div class="active-loc-text">
+        <strong id="active-loc-name">Selected Location</strong>
+        <small id="active-loc-coords"></small>
+      </div>
+      <button type="button" id="btn-clear-loc" class="button-text-subtle" title="Clear and re-enter location">Change location</button>
+    </div>
+
+    <!-- Filters: Travel Context, Category, and Radius -->
+    <div class="controls-filter-grid">
+      <!-- Travel Context Selector -->
+      <label class="filter-field">
+        <span class="filter-label">Travel Context</span>
+        <select id="select-travel-context">
+          <option value="general">General / Any</option>
+          <option value="walking_city">Walking in a city</option>
+          <option value="road_travel">Travelling by road</option>
+          <option value="train_travel">Train / Railway travel</option>
+          <option value="airport_travel">Airport travel</option>
+          <option value="campus">On or near campus</option>
+        </select>
+      </label>
+
+      <!-- Radius Selector -->
+      <label class="filter-field">
+        <span class="filter-label">Search Radius</span>
+        <select id="select-radius">
+          <option value="2">Within 2 km (Walking)</option>
+          <option value="5" selected>Within 5 km (Standard)</option>
+          <option value="10">Within 10 km (Transit)</option>
+          <option value="20">Within 20 km (Regional)</option>
+        </select>
+      </label>
+
+      <!-- Category Filter Pills -->
+      <div class="filter-field category-filter-field">
+        <span class="filter-label">Facility Category</span>
+        <div class="category-pills" id="category-pills" role="radiogroup" aria-label="Category filter">
+          <button type="button" class="category-pill active" data-category="all" role="radio" aria-checked="true">All</button>
+          <button type="button" class="category-pill" data-category="police" role="radio" aria-checked="false">Police</button>
+          <button type="button" class="category-pill" data-category="campus_security" role="radio" aria-checked="false">Campus</button>
+          <button type="button" class="category-pill" data-category="transit" role="radio" aria-checked="false">Transit</button>
+          <button type="button" class="category-pill" data-category="lost_property" role="radio" aria-checked="false">Lost Property</button>
+          <button type="button" class="category-pill" data-category="public_service" role="radio" aria-checked="false">Civic</button>
+          <button type="button" class="category-pill" data-category="post_office" role="radio" aria-checked="false">Post Office</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Status / Loading / Error Notice Region -->
+  <div id="handover-notice" class="handover-notice" hidden role="alert"></div>
+
+  <!-- Main View: Interactive Map + Results List -->
+  <div class="handover-main-layout">
+    <!-- Map Column -->
+    <div class="map-column">
+      <div class="map-container-wrapper">
+        <div id="handover-map" class="handover-map" aria-label="Interactive Handover Map"></div>
+        <div class="map-legend">
+          <span><i class="legend-dot dot-user"></i> Your location</span>
+          <span><i class="legend-dot dot-police"></i> Police</span>
+          <span><i class="legend-dot dot-campus"></i> Campus Desk</span>
+          <span><i class="legend-dot dot-transit"></i> Transit / Lost Property</span>
+          <span><i class="legend-dot dot-post"></i> Post Office</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Results List Column -->
+    <div class="results-column">
+      <div class="results-header">
+        <h2 id="results-count-heading">Nearby Facilities</h2>
+        <span id="results-meta-badge" class="results-meta-badge">Choose a location to search</span>
+      </div>
+
+      <!-- Result Cards Container -->
+      <div id="handover-results-list" class="handover-results-list">
+        <!-- Initial Guidance Prompt -->
+        <div class="handover-empty-state">
+          <div class="empty-icon">📍</div>
+          <h3>Find safe handover points nearby</h3>
+          <p>Click <strong>"Use my current location"</strong> or enter a city, street, or landmark above to discover verified police stations, transit desks, and campus repositories.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Helpful Context Advice -->
+  <div class="handover-faq-grid">
+    <article class="panel faq-card">
+      <h3>🏛️ Police Stations & Custody</h3>
+      <p>Police stations maintain official property custody books and secure storage for high-value items, passports, identity cards, and mobile devices. They provide official documentation for insurers and claimants.</p>
+    </article>
+    <article class="panel faq-card">
+      <h3>🏫 Campus Security Desks</h3>
+      <p>If you are a student or visitor on college property, the campus security command desk is the primary official repository for student items, backpacks, notebooks, and student ID cards.</p>
+    </article>
+    <article class="panel faq-card">
+      <h3>📮 Post Office Caveat</h3>
+      <p>Ordinary post offices do not automatically accept found items unless mailed with postage or officially coordinated. Always inquire directly with counter personnel before handing over any item.</p>
+    </article>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<!-- Leaflet JS for interactive maps -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script defer src="/static/js/travel-handover.js"></script>
+{% endblock %}

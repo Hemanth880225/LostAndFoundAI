@@ -133,43 +133,76 @@ def backward_chaining(
 # 3. BACKTRACKING
 # --------------------------------------------------
 
+
 def find_evidence_combination(
     evidence: list[str],
     required_count: int = 2,
+    target_goal: str = "plausible_match",
 ) -> list[str] | None:
     """
-    Search for a combination of supporting evidence.
+    Find the smallest combination of evidence that supports a goal.
 
-    Try including an evidence item. If that path fails,
-    undo the choice and explore the alternative.
+    Backtracking explores combinations by including or skipping
+    evidence. A combination is accepted only if forward chaining
+    can derive the requested goal from it.
     """
+
     if required_count < 1:
         raise ValueError("required_count must be at least 1.")
 
-    selected = []
+    # Remove duplicate evidence while preserving its order.
+    evidence = list(dict.fromkeys(evidence))
 
-    def search(index: int) -> list[str] | None:
-        if len(selected) >= required_count:
-            return selected.copy()
+    if required_count > len(evidence):
+        return None
 
-        if index >= len(evidence):
-            return None
+    # Try smaller combinations before larger ones.
+    for target_size in range(required_count, len(evidence) + 1):
 
-        # Branch 1: include the current evidence.
-        selected.append(evidence[index])
+        selected: list[str] = []
 
-        result = search(index + 1)
+        def search(index: int) -> list[str] | None:
+            # A complete combination has been selected.
+            if len(selected) == target_size:
+                derived = forward_chaining(set(selected))
+
+                if target_goal in derived:
+                    return selected.copy()
+
+                return None
+
+            # No evidence remains to fill the combination.
+            if index >= len(evidence):
+                return None
+
+            # Prune branches that cannot reach the target size.
+            remaining_slots = target_size - len(selected)
+
+            if len(evidence) - index < remaining_slots:
+                return None
+
+            # Branch 1: include the current evidence.
+            selected.append(evidence[index])
+
+            result = search(index + 1)
+
+            if result is not None:
+                return result
+
+            # Backtrack: undo the choice.
+            selected.pop()
+
+            # Branch 2: skip the current evidence.
+            return search(index + 1)
+
+        result = search(0)
 
         if result is not None:
             return result
 
-        # Backtrack: undo the previous choice.
-        selected.pop()
+    return None
 
-        # Branch 2: skip the current evidence.
-        return search(index + 1)
 
-    return search(0)
 
 
 # --------------------------------------------------
@@ -222,12 +255,14 @@ def build_match_facts(
 # COMBINE ALL THREE TECHNIQUES
 # --------------------------------------------------
 
+
 def evaluate_match(
     lost,
     found,
     components: dict[str, float],
 ) -> dict:
     """Evaluate one lost/found pair using all three algorithms."""
+
     initial_facts = build_match_facts(
         lost,
         found,
@@ -237,13 +272,15 @@ def evaluate_match(
     # Technique 1: derive facts from the available evidence.
     derived_facts = forward_chaining(initial_facts)
 
-    # Technique 2: independently check the target goal.
+    # Technique 2: check whether the goal can be proved
+    # directly from the initial facts and backward rules.
     goal_proven = backward_chaining(
         "plausible_match",
         initial_facts,
     )
 
-    # Technique 3: find a compact combination of evidence.
+    # Technique 3: find the smallest evidence combination
+    # that can derive the same goal.
     evidence_options = [
         fact
         for fact in (
@@ -256,21 +293,11 @@ def evaluate_match(
         if fact in initial_facts
     ]
 
-    # Category agreement is mandatory for this explanation.
-    if "category_match" in evidence_options:
-        evidence_options.remove("category_match")
-
-        combination = find_evidence_combination(
-            evidence_options,
-            required_count=1,
-        )
-
-        if combination is not None:
-            combination.insert(0, "category_match")
-        else:
-            combination = None
-    else:
-        combination = None
+    combination = find_evidence_combination(
+        evidence=evidence_options,
+        required_count=2,
+        target_goal="plausible_match",
+    )
 
     return {
         "plausible_match": (

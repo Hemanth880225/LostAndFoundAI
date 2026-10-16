@@ -1,0 +1,188 @@
+{% extends "base.html" %}
+{% block title %}Case {{ case_reference }} — Foundly Guest Portal{% endblock %}
+
+{% block content %}
+<section class="wrap detail-page" id="guest-case-view" data-case-ref="{{ case_reference }}" data-initial-key="{{ initial_key }}">
+  <a class="back-link" href="/">← Back to Home</a>
+
+  <!-- Secret Key Authentication Bar (if not provided in query) -->
+  <div class="panel" id="auth-box" style="padding:16px 20px; margin:20px 0; background:#fff; border:1px solid #e2e8f0; border-radius:12px; display:none;">
+    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+      <div>
+        <strong>Enter Case Secret Key</strong>
+        <p style="font-size:0.85rem; color:#64748b; margin:2px 0 0;">Please provide the secret key from your submission receipt to access this case.</p>
+      </div>
+      <div style="display:flex; gap:8px;">
+        <input type="password" id="input-secret-key" placeholder="Enter secret key…" style="height:40px; padding:0 12px; border:1px solid #cbd5e1; border-radius:8px;">
+        <button type="button" class="button button-small" id="btn-unlock-case">Unlock Case</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="case-content" style="display:none;">
+    <!-- Case Header Banner -->
+    <div class="case-receipt-hero" style="margin-top:20px;">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:16px;">
+        <div>
+          <span style="font-size:0.8rem; text-transform:uppercase; letter-spacing:1px; color:#94a3b8; font-weight:700;">SECURE CASE DOSSIER</span>
+          <div class="case-ref-tag" id="display-case-ref">{{ case_reference }}</div>
+          <span class="status-pill" id="display-status" style="position:static; margin-top:6px; display:inline-block;">ACTIVE</span>
+        </div>
+        <div style="text-align:right;">
+          <small style="color:#94a3b8; display:block;">Case Secret Key (Keep Private)</small>
+          <span class="case-secret-pill" id="display-secret-key">••••••••••••••••</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="detail-layout">
+      <!-- Left Column: Item Photos & Protected Metadata -->
+      <div>
+        <div class="detail-image" id="case-main-image">
+          <span class="image-placeholder">📷</span>
+        </div>
+        <div class="gallery-strip" id="case-gallery"></div>
+
+        <div class="panel" style="padding:22px; margin-top:20px;">
+          <h3 style="font-size:1.05rem; margin:0 0 14px 0;">Item Information</h3>
+          <div class="detail-facts">
+            <div class="fact">
+              <small>Item Name</small>
+              <b id="fact-name">—</b>
+            </div>
+            <div class="fact">
+              <small>Category</small>
+              <b id="fact-category">—</b>
+            </div>
+            <div class="fact">
+              <small>Transit Mode</small>
+              <b id="fact-journey">—</b>
+            </div>
+            <div class="fact">
+              <small>Discovery / Loss Date</small>
+              <b id="fact-date">—</b>
+            </div>
+            <div class="fact">
+              <small>Pickup Area</small>
+              <b id="fact-pickup">—</b>
+            </div>
+            <div class="fact">
+              <small>Drop-off Area</small>
+              <b id="fact-dropoff">—</b>
+            </div>
+          </div>
+
+          <div class="detail-divider"></div>
+          <h4 style="font-size:0.95rem; margin:0 0 6px 0;">Public Description</h4>
+          <p id="fact-desc" style="font-size:0.9rem; color:#64748b; margin:0; line-height:1.5;">—</p>
+
+          <!-- Protected details section (visible only to case holder) -->
+          <div class="private-box" style="margin-top:20px;">
+            <div class="private-header">
+              <span>🔒</span> CONFIDENTIAL OWNER-VERIFICATION EVIDENCE
+            </div>
+            <div style="font-size:0.85rem; color:#475569; margin-bottom:8px;">
+              <strong>Interior Bag Contents:</strong>
+              <p id="fact-private-contents" style="margin:2px 0 8px 0; color:#334155;">None specified</p>
+            </div>
+            <div style="font-size:0.85rem; color:#475569;">
+              <strong>Distinctive Marks / Serial:</strong>
+              <p id="fact-distinctive-marks" style="margin:2px 0 0 0; color:#334155;">None specified</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Reward Account Linking Box -->
+        <div class="panel" style="padding:22px; margin-top:20px;" id="reward-link-card">
+          <div style="display:flex; gap:10px; align-items:center;">
+            <span style="font-size:1.4rem;">🏆</span>
+            <div>
+              <h3 style="font-size:1rem; margin:0;">Finder Reward Points Eligibility</h3>
+              <p style="font-size:0.82rem; color:#64748b; margin:2px 0 0;">Link your email if you wish to receive merit reward points after verified handover.</p>
+            </div>
+          </div>
+          <div id="reward-linked-status" style="margin-top:14px; font-size:0.88rem; display:none;">
+            <div style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:8px; padding:10px 14px; color:#166534;">
+              ✓ Linked Account: <strong id="linked-email-display">email@college.edu</strong>
+            </div>
+          </div>
+          <div id="reward-link-form" style="display:flex; gap:8px; margin-top:14px;">
+            <input type="email" id="input-link-email" placeholder="Enter your email to link…" style="flex:1; height:40px; padding:0 12px; border:1px solid #cbd5e1; border-radius:8px; font-size:0.88rem;">
+            <button type="button" class="button button-small" id="btn-link-email">Link Account</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column: Coordination, Matches, & Safe Handover -->
+      <div>
+        <!-- Safe Handover Code Card -->
+        <div class="panel" style="padding:22px;">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h3 style="font-size:1.05rem; margin:0;">Safe Handover Verification</h3>
+            <span class="status-pill" id="handover-status-badge">NOT ISSUED</span>
+          </div>
+          <p style="font-size:0.85rem; color:#64748b; margin:6px 0 14px 0;">
+            Never meet strangers in private or dark locations. Use this one-time code to confirm physical recovery at a public desk.
+          </p>
+
+          <div id="active-handover-box" style="display:none;" class="handover-code-card">
+            <small style="text-transform:uppercase; letter-spacing:1px; color:#065f46; font-weight:700;">One-Time Handover Code</small>
+            <div class="code-display" id="handover-code-display">HO-••••-••••</div>
+            <p style="font-size:0.85rem; color:#065f46; margin:0;" id="handover-location-text">
+              Meeting Location: Station Helpdesk
+            </p>
+          </div>
+
+          <!-- Handover Confirmation Input -->
+          <div id="confirm-handover-wrap" style="margin-top:16px;">
+            <div style="display:flex; gap:8px;">
+              <input type="text" id="input-confirm-code" placeholder="Enter HO-XXXX-XXXX code…" style="flex:1; height:42px; padding:0 12px; border:1px solid #cbd5e1; border-radius:8px; font-family:monospace; font-weight:700; text-transform:uppercase;">
+              <button type="button" class="button button-small" id="btn-confirm-handover">Confirm Return</button>
+            </div>
+            <span class="field-hint">Once confirmed, this case and its associated claim will be marked completed.</span>
+          </div>
+        </div>
+
+        <!-- Privacy-Preserving Coordination Channel -->
+        <div class="panel coordination-box">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+            <h3 style="font-size:1.05rem; margin:0;">Direct Coordination Channel</h3>
+            <span style="font-size:0.75rem; background:#f1f5f9; padding:4px 8px; border-radius:6px; color:#475569; font-weight:600;">🔒 Masked Relay</span>
+          </div>
+          <p style="font-size:0.82rem; color:#64748b; margin:0 0 12px 0;">
+            Exchange messages with the other party without revealing phone numbers.
+          </p>
+
+          <div class="messages-history" id="messages-list">
+            <div class="msg-bubble msg-system">Loading messages…</div>
+          </div>
+
+          <form id="msg-form" style="display:flex; gap:8px;">
+            <input type="text" id="input-msg-text" placeholder="Type a message or suggest a public handover desk…" required style="flex:1; height:42px; padding:0 12px; border:1px solid #cbd5e1; border-radius:8px; font-size:0.88rem;">
+            <button type="submit" class="button button-small" id="btn-send-msg">Send</button>
+          </form>
+        </div>
+
+        <!-- AI Journey & Time Matches -->
+        <div class="panel" style="padding:22px; margin-top:20px;">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h3 style="font-size:1.05rem; margin:0;">Potential Journey & Route Matches</h3>
+            <button type="button" class="button button-light button-small" id="btn-refresh-matches">Refresh</button>
+          </div>
+          <p style="font-size:0.82rem; color:#64748b; margin:6px 0 14px 0;">
+            Correlating visual similarity, item description, journey type, and route overlap.
+          </p>
+
+          <div id="matches-container" style="display:grid; gap:10px;">
+            <div style="color:#94a3b8; font-size:0.85rem; text-align:center; padding:16px;">Searching candidate reports…</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script defer src="/static/js/guest-case.js"></script>
+{% endblock %}

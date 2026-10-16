@@ -1,0 +1,319 @@
+{% extends "base.html" %}
+{% block title %}Foundly — Campus Lost & Found Community{% endblock %}
+
+{% block content %}
+<!-- Hero Section with Core Actions -->
+<section class="hero wrap">
+  <div class="hero-copy">
+    <div class="eyebrow">
+      <span class="eyebrow-icon">✳</span>
+      CAMPUS & TRANSIT LOST-AND-FOUND
+    </div>
+    <h1>Lost something?<br><span>Let’s bring it home.</span></h1>
+    <p class="lead">Smart visual AI matching, attribute recognition, and community reporting to reconnect you with lost belongings safely.</p>
+    
+    <!-- Primary Core Actions Grid -->
+    <div class="hero-actions-grid">
+      <a class="action-btn lost-btn" href="/report/lost">
+        <span class="btn-icon">📦</span>
+        <div>
+          <strong>Report a Lost Item</strong>
+          <small>Post details & photos to match finders</small>
+        </div>
+        <span class="arrow-indicator">↗</span>
+      </a>
+
+      <a class="action-btn found-btn" href="/report/found">
+        <span class="btn-icon">🤝</span>
+        <div>
+          <strong>Report a Found Item</strong>
+          <small>Help return property to its owner</small>
+        </div>
+        <span class="arrow-indicator">↗</span>
+      </a>
+
+      <a class="action-btn search-btn" href="/browse">
+        <span class="btn-icon">🔍</span>
+        <div>
+          <strong>Find a Lost Item</strong>
+          <small>Search active lost & found listings</small>
+        </div>
+        <span class="arrow-indicator">→</span>
+      </a>
+
+      <a class="action-btn photo-btn" href="/search/image">
+        <span class="btn-icon">📷</span>
+        <div>
+          <strong>Search Using a Photo</strong>
+          <small>CLIP visual AI search without text</small>
+        </div>
+        <span class="arrow-indicator">→</span>
+      </a>
+    </div>
+
+    <div class="trust-note">
+      <span class="avatar-stack"><i>✦</i><i>♡</i><i>⌂</i></span>
+      <span>No mandatory account needed for guest finders. Free & privacy-protected.</span>
+    </div>
+  </div>
+
+  <div class="hero-art">
+    <div class="art-glow"></div>
+    <div class="art-sun"></div>
+    <div class="art-card art-card-main">
+      <div class="mini-label">Multimodal AI Matching</div>
+      <div class="bag-illustration">
+        <div class="bag-handle"></div>
+        <div class="bag-body"><span>✿</span></div>
+      </div>
+      <div class="item-caption">
+        <b>Color · Shape · Distinctive Marks</b>
+        <small>Analyzed across campus reports</small>
+      </div>
+      <div class="spark spark-one">✦</div>
+      <div class="spark spark-two">✳</div>
+    </div>
+    <div class="art-card art-card-note">
+      <span class="note-check">✓</span>
+      <div>
+        <b>Verified claims only</b>
+        <small>Private evidence protection</small>
+      </div>
+    </div>
+    <div class="art-orbit orbit-one"></div>
+    <div class="art-orbit orbit-two"></div>
+  </div>
+</section>
+
+<!-- Integrated AI Search Panel (Direct on Home Page) -->
+<section class="wrap section-compact">
+  <div class="panel home-search-panel" id="home-search-container">
+    <div class="home-search-header">
+      <div class="section-title-wrap">
+        <span class="section-badge">AI SEARCH</span>
+        <h2>Search by Photo, Description, or Attributes</h2>
+      </div>
+      <p class="section-subtitle">Search with only a photograph, or combine text descriptions with physical attribute filters.</p>
+    </div>
+
+    <!-- Multi-modal input container -->
+    <div class="home-search-body">
+      <!-- Search Mode Tabs -->
+      <div class="search-mode-tabs">
+        <button type="button" class="tab-pill active" id="tab-all-search">All-in-One Search</button>
+        <button type="button" class="tab-pill" id="tab-photo-only">Photo Only</button>
+        <button type="button" class="tab-pill" id="tab-text-only">Text & Attributes</button>
+      </div>
+
+      <div class="search-input-row">
+        <!-- Natural Language / Text Input -->
+        <div class="search-field-main" id="field-text-group">
+          <span class="search-lead-icon">⌕</span>
+          <input
+            type="text"
+            id="home-query-input"
+            placeholder="Describe what you lost or found (e.g. Black Wildcraft backpack with red keychain near library)…"
+            aria-label="Search query"
+          >
+        </div>
+
+        <button type="button" class="button" id="btn-home-search">
+          <span>Search</span>
+          <span aria-hidden="true">→</span>
+        </button>
+      </div>
+
+      <!-- Drag & Drop Query Photo Zone -->
+      <div class="home-photo-dropzone" id="home-dropzone">
+        <input type="file" id="home-photo-input" accept="image/jpeg,image/png,image/webp" multiple hidden>
+        <div class="dropzone-inner" id="dropzone-click-target" tabindex="0" role="button">
+          <span class="drop-icon">📷</span>
+          <div class="drop-text">
+            <b>Drag and drop query photos here, or <span>browse files</span></b>
+            <small>JPEG, PNG, WebP up to 5 MiB · Searches visually using CLIP embeddings</small>
+          </div>
+        </div>
+        <div id="home-photo-previews" class="home-preview-strip" style="display:none"></div>
+      </div>
+
+      <!-- Detected Attributes Preview (Populates when photo dropped) -->
+      <div id="home-detected-attrs" class="detected-attribute-panel" style="display:none">
+        <div class="detected-attribute-header">
+          <span class="sparkle-icon">✨</span>
+          <b>AI Detected from Photo:</b>
+          <span id="home-detected-chips" class="detected-chips"></span>
+        </div>
+      </div>
+
+      <!-- Expandable Attribute Filters Accordion -->
+      <div class="home-filters-accordion">
+        <button type="button" class="filters-toggle-btn" id="btn-toggle-filters" aria-expanded="false">
+          <span>⚙ Optional Attribute Filters (Color, Category, Shape, Material)</span>
+          <span class="arrow-icon">▼</span>
+        </button>
+
+        <div id="home-filters-grid" class="home-filters-content" style="display:none">
+          <div class="filter-col">
+            <label for="filter-category">Category</label>
+            <select id="filter-category">
+              <option value="">Any category</option>
+              <option value="Backpack">Backpack</option>
+              <option value="Handbag">Handbag / Purse</option>
+              <option value="Water Bottle">Water Bottle / Flask</option>
+              <option value="Smartphone">Smartphone</option>
+              <option value="Wallet">Wallet / Cardholder</option>
+              <option value="Keys">Keys</option>
+              <option value="Earphones">Earphones / Headphones</option>
+              <option value="Laptop">Laptop</option>
+              <option value="Watch">Watch</option>
+              <option value="Book">Book</option>
+              <option value="Clothing">Clothing</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+
+          <div class="filter-col">
+            <label for="filter-color">Color</label>
+            <select id="filter-color">
+              <option value="">Any color</option>
+              <option value="Black">Black</option>
+              <option value="White">White</option>
+              <option value="Silver">Silver / Grey</option>
+              <option value="Blue">Blue</option>
+              <option value="Navy Blue">Navy Blue</option>
+              <option value="Red">Red</option>
+              <option value="Green">Green</option>
+              <option value="Yellow">Yellow / Gold</option>
+              <option value="Brown">Brown</option>
+              <option value="Pink">Pink</option>
+              <option value="Purple">Purple</option>
+              <option value="Orange">Orange</option>
+              <option value="Maroon">Maroon</option>
+            </select>
+          </div>
+
+          <div class="filter-col">
+            <label for="filter-shape">Shape</label>
+            <select id="filter-shape">
+              <option value="">Any shape</option>
+              <option value="Rectangular">Rectangular</option>
+              <option value="Circular">Circular / Round</option>
+              <option value="Cylindrical">Cylindrical</option>
+              <option value="Square">Square</option>
+              <option value="Oval">Oval</option>
+              <option value="Rounded">Rounded</option>
+            </select>
+          </div>
+
+          <div class="filter-col">
+            <label for="filter-target-type">Show Listings</label>
+            <select id="filter-target-type">
+              <option value="">All (Lost & Found)</option>
+              <option value="found">Found items only</option>
+              <option value="lost">Lost items only</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Live Search Results Container -->
+    <div id="home-results-area" class="home-results-area" style="display:none">
+      <div class="results-meta-bar">
+        <h3 id="home-results-title">Search Results</h3>
+        <button type="button" class="button-text-subtle" id="btn-clear-home-results">Clear results</button>
+      </div>
+      <div id="home-results-grid" class="report-grid"></div>
+    </div>
+  </div>
+</section>
+
+<!-- Recently Reported Community Section -->
+<section class="wrap section recent-section">
+  <div class="section-heading">
+    <div>
+      <div class="eyebrow">THE COMMUNITY BOARD</div>
+      <h2>Recently reported</h2>
+      <p>Newest listings reported on campus and nearby transit.</p>
+    </div>
+    <a class="text-link" href="/browse">Explore all reports <span>→</span></a>
+  </div>
+
+  <div id="recent-reports" class="report-grid" data-limit="6">
+    <div class="skeleton card-skeleton"></div>
+    <div class="skeleton card-skeleton"></div>
+    <div class="skeleton card-skeleton"></div>
+  </div>
+  <div class="inline-state" id="home-state" role="status"></div>
+</section>
+
+<!-- Safe Handover & Campus Features Banner -->
+<section class="wrap section-compact">
+  <div class="campus-handover-banner">
+    <div class="banner-card">
+      <span class="banner-icon">📍</span>
+      <div>
+        <h3>Need a Safe Place to Deposit or Retrieve an Item?</h3>
+        <p>Discover verified campus security desks, student union lost-property offices, and official police stations.</p>
+        <a class="button button-small button-light" href="/travel-handover" style="margin-top:8px;">Safe handover 📍</a>
+      </div>
+    </div>
+    <div class="banner-card">
+      <span class="banner-icon">🏆</span>
+      <div>
+        <h3>Earn Reward Points for Honest Recovery</h3>
+        <p>Campus finders earn value-based points upon confirmed physical return. Rate: 5 points = ₹1.</p>
+        <a class="button button-small button-light" href="/rewards" style="margin-top:8px;">Reward Policy & Ledger →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- How It Works Section -->
+<section class="how-band">
+  <div class="wrap how-inner">
+    <div class="how-intro">
+      <div class="eyebrow">A SIMPLE, TRUSTWORTHY WAY FORWARD</div>
+      <h2>From missing<br>to <span>reunited.</span></h2>
+      <p>Small details can make a big difference. Share what you know, search visually, and recover your property safely.</p>
+      <a href="/help" class="text-link">Read our safety & verification guide →</a>
+    </div>
+    <div class="steps">
+      <article class="step">
+        <div class="step-number">01</div>
+        <div class="step-icon">＋</div>
+        <h3>Report or Search</h3>
+        <p>Share item details, upload photos, or search with only a photo. No account required for guest finders.</p>
+      </article>
+      <article class="step">
+        <div class="step-number">02</div>
+        <div class="step-icon">✨</div>
+        <h3>AI Matching</h3>
+        <p>CLIP embeddings and attribute analysis compare visual features, colors, shapes, and distinctive marks.</p>
+      </article>
+      <article class="step">
+        <div class="step-number">03</div>
+        <div class="step-icon">🛡️</div>
+        <h3>Safe Handover</h3>
+        <p>Owners verify private details, claims are reviewed, and items are returned at verified desks.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- Ready to Reconnect CTA -->
+<section class="wrap closing-cta">
+  <div>
+    <div class="eyebrow">READY WHEN YOU ARE</div>
+    <h2>Let’s get your belongings back.</h2>
+  </div>
+  <div style="display:flex;gap:12px;flex-wrap:wrap;">
+    <a href="/report/lost" class="button">Report a Lost Item <span>↗</span></a>
+    <a href="/report/found" class="button button-light">Report a Found Item</a>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script defer src="/static/js/home.js"></script>
+{% endblock %}

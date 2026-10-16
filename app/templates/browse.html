@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}Browse Lost & Found Directory — Foundly{% endblock %}
+
+{% block content %}
+<section class="page-hero wrap compact-hero">
+  <div class="eyebrow">COMMUNITY DIRECTORY</div>
+  <h1>Help something<br><span>find its way back.</span></h1>
+  <p class="lead">Search and filter active campus listings by category, location, and keywords. A small detail might be the one that connects.</p>
+</section>
+
+<section class="wrap browse-wrap">
+  <!-- Multi-Option Filter Bar -->
+  <div class="filter-bar">
+    <label class="search-box">
+      <span>⌕</span>
+      <input id="search-input" type="search" placeholder="Search keywords (e.g. Dell laptop, blue wallet, library)…" aria-label="Search listings">
+    </label>
+
+    <select id="type-filter" aria-label="Listing type">
+      <option value="">All listings (Lost & Found)</option>
+      <option value="lost">Lost items only</option>
+      <option value="found">Found items only</option>
+    </select>
+
+    <select id="category-filter" aria-label="Filter by category">
+      <option value="">All categories</option>
+      <option value="Backpack">Backpack</option>
+      <option value="Handbag">Handbag / Purse</option>
+      <option value="Water Bottle">Water Bottle</option>
+      <option value="Smartphone">Smartphone</option>
+      <option value="Laptop">Laptop</option>
+      <option value="Wallet">Wallet / Cards</option>
+      <option value="Keys">Keys</option>
+      <option value="Earphones">Earphones / AirPods</option>
+      <option value="Watch">Watch</option>
+      <option value="Umbrella">Umbrella</option>
+      <option value="ID / Documents">ID / Documents</option>
+      <option value="Clothing">Clothing</option>
+      <option value="Other">Other</option>
+    </select>
+
+    <select id="campus-filter" aria-label="Filter by campus zone">
+      <option value="">All campus locations</option>
+      <option value="Central Library">Central Library</option>
+      <option value="Administration">Main Admin Building</option>
+      <option value="Engineering">Science & Engineering</option>
+      <option value="Canteen">Student Canteen</option>
+      <option value="Sports">Sports Complex</option>
+      <option value="Hostel">Hostels & Residences</option>
+    </select>
+
+    <button type="button" class="button button-light button-small" id="clear-filters">Clear</button>
+    <a class="button button-small button-subtle" href="/search/image" title="Search using visual CLIP matching">Search by Photo 📷</a>
+  </div>
+
+  <div class="browse-meta-row">
+    <p id="result-count" class="result-count">Loading listings…</p>
+    <div class="browse-quick-links">
+      <a href="/report/lost" class="text-link">+ Report Lost</a>
+      <span>·</span>
+      <a href="/report/found" class="text-link">+ Report Found</a>
+    </div>
+  </div>
+
+  <div id="report-list" class="report-grid browse-grid">
+    <div class="skeleton card-skeleton"></div>
+    <div class="skeleton card-skeleton"></div>
+    <div class="skeleton card-skeleton"></div>
+  </div>
+
+  <div class="browse-actions">
+    <button id="load-more" class="button button-light" hidden>Load more listings</button>
+  </div>
+
+  <div id="browse-state" class="state-panel" role="status"></div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script defer src="/static/js/browse.js"></script>
+{% endblock %}

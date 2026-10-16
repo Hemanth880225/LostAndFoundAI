@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+{% block title %}Claim #{{ claim_id }} Status — Foundly{% endblock %}
+
+{% block content %}
+<section class="wrap claim-status-page">
+  <a href="/browse" class="back-link">← Back to reports</a>
+
+  <div class="claim-status-header">
+    <div class="eyebrow"><span class="eyebrow-icon">🔍</span> CLAIM VERIFICATION PORTAL</div>
+    <h1>Claim #{{ claim_id }} Status</h1>
+    <p class="lead">Track your claim verification progress and submit supplemental ownership evidence requested by reviewers.</p>
+  </div>
+
+  <div id="claim-state-notice" class="inline-state" role="status">Loading claim details…</div>
+
+  <div id="claim-dossier" class="claim-dossier-layout" data-id="{{ claim_id }}" hidden>
+    <!-- Status Overview Card -->
+    <div class="panel status-overview-card">
+      <div class="status-top-row">
+        <div>
+          <span class="mini-label">Current Verification Status</span>
+          <div id="status-pill-container" class="status-pill-wrapper"></div>
+        </div>
+        <div class="date-badge">
+          <small>Submitted On</small>
+          <strong id="claim-created-date">-</strong>
+        </div>
+      </div>
+
+      <div class="public-message-box" id="public-message-box">
+        <span class="message-icon">ℹ️</span>
+        <p id="public-status-message"></p>
+      </div>
+
+      <div class="claim-meta-grid">
+        <div class="meta-item">
+          <small>Claimant Name</small>
+          <strong id="meta-claimant-name">-</strong>
+        </div>
+        <div class="meta-item">
+          <small>Contact Email</small>
+          <strong id="meta-contact-email">-</strong>
+        </div>
+        <div class="meta-item">
+          <small>Contact Verification</small>
+          <span id="meta-verification-badge" class="badge-unverified">Unverified Contact</span>
+        </div>
+        <div class="meta-item">
+          <small>Referenced Lost Report</small>
+          <a id="meta-lost-link" class="text-link" href="#">View Report</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Reviewer Information Request Action Panel -->
+    <div id="action-required-card" class="panel action-required-card" hidden>
+      <div class="action-heading">
+        <span class="warning-icon">⚠️</span>
+        <div>
+          <h3>Additional Evidence or Details Requested</h3>
+          <p>An authorized reviewer examined your claim and requested clarifying details before approval.</p>
+        </div>
+      </div>
+      <div class="reviewer-inquiry-box">
+        <strong>Reviewer Inquiry:</strong>
+        <p id="inquiry-text-display"></p>
+      </div>
+
+      <form id="respond-info-form" class="respond-info-form">
+        <label class="field">
+          <span>Your Response</span>
+          <textarea name="additional_info" rows="4" required minlength="5" maxlength="2000" placeholder="Provide serial numbers, distinctive markings, receipt details, or answers to the questions above…"></textarea>
+          <small class="field-hint">Never share confidential passwords or lock screen codes.</small>
+        </label>
+        <button type="submit" class="button button-small" id="btn-submit-info">Submit Information</button>
+      </form>
+    </div>
+
+    <!-- Supplementary Evidence Upload Card -->
+    <div class="panel evidence-upload-card">
+      <div class="card-title-group">
+        <h3>Upload Ownership Evidence</h3>
+        <p>Upload purchase receipts, serial number cards, or original photos. Files are stored securely in encrypted storage and accessible solely to authorized reviewers.</p>
+      </div>
+
+      <form id="upload-evidence-form" class="evidence-upload-form" enctype="multipart/form-data">
+        <div class="upload-grid">
+          <label class="field">
+            <span>Evidence Type</span>
+            <select name="evidence_type" required>
+              <option value="purchase_receipt">Purchase Receipt / Invoice</option>
+              <option value="serial_number">Serial Number / Packaging</option>
+              <option value="original_photo">Original Photo of Item</option>
+              <option value="ownership_document">Warranty / Registration Document</option>
+              <option value="accessory_detail">Accessory / Contents Proof</option>
+              <option value="other">Other Supporting Evidence</option>
+            </select>
+          </label>
+
+          <label class="field">
+            <span>Description</span>
+            <input type="text" name="description" required minlength="2" maxlength="200" placeholder="e.g. Amazon invoice showing matching model">
+          </label>
+
+          <label class="field field-wide">
+            <span>Select File (PDF, PNG, JPG, WebP · Max 5MB)</span>
+            <input type="file" name="file" accept=".pdf,image/png,image/jpeg,image/webp" required>
+          </label>
+        </div>
+
+        <div class="privacy-notice">
+          <small>🔒 <strong>Privacy Assurance:</strong> Uploaded evidence is never made public. Only specifically authorized campus reviewers have access during claim verification.</small>
+        </div>
+
+        <button type="submit" class="button button-small" id="btn-upload-ev">Upload Evidence</button>
+      </form>
+      <div id="upload-feedback" class="form-feedback" role="alert" hidden></div>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script defer src="/static/js/claim-status.js"></script>
+{% endblock %}

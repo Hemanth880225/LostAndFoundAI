@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% block title %}Reward Points Programme — Foundly{% endblock %}
+
+{% block content %}
+<section class="wrap rewards-page">
+  <div class="rewards-header">
+    <div class="eyebrow"><span class="eyebrow-icon">🏆</span> HONEST RECOVERY INCENTIVES</div>
+    <h1>Value-Based Reward Points</h1>
+    <p class="lead">Recognizing students and community members who return lost belongings. Earn reward points for every verified item recovery.</p>
+  </div>
+
+  <!-- Policy Highlights Card -->
+  <div class="rewards-rules-grid">
+    <article class="panel rule-card">
+      <div class="rule-icon">⚖️</div>
+      <h3>Fair 5:1 Conversion</h3>
+      <p>Every <strong>5 reward points = ₹1</strong> of estimated recovery value. Points are awarded based on verified item value.</p>
+    </article>
+    <article class="panel rule-card">
+      <div class="rule-icon">🛡️</div>
+      <h3>Handover-First Principle</h3>
+      <p>Points are credited <strong>only after confirmed physical return</strong> to the rightful owner. Submitting a report does not generate points.</p>
+    </article>
+    <article class="panel rule-card">
+      <div class="rule-icon">📜</div>
+      <h3>Immutable Ledger</h3>
+      <p>Every credit and reversal is recorded in an append-only audit ledger with unique transaction IDs and human-verified justifications.</p>
+    </article>
+  </div>
+
+  <div class="rewards-main-layout">
+    <!-- Interactive Points Calculator -->
+    <div class="panel calculator-card">
+      <div class="panel-header">
+        <h2>Points Calculator Preview</h2>
+        <span class="meta-tag">Estimated Policy</span>
+      </div>
+      <p class="card-desc">Simulate how many reward points a verified recovery yields based on current college programme guidelines.</p>
+
+      <form id="calc-form" class="calc-form">
+        <label class="field">
+          <span>Verified Item Value in INR (₹)</span>
+          <input type="number" id="calc-item-val" min="10" step="10" value="2500" required>
+        </label>
+        <button type="submit" class="button button-small" id="btn-run-calc">Calculate Points</button>
+      </form>
+
+      <div id="calc-result" class="calc-result-box">
+        <div class="calc-metric">
+          <small>Eligible Reward (10%)</small>
+          <strong id="res-rupees">₹250.00</strong>
+        </div>
+        <div class="calc-metric highlight-metric">
+          <small>Reward Points (5 pts / ₹)</small>
+          <strong id="res-points">1,250 Points</strong>
+        </div>
+      </div>
+      <small class="terms-caption">Note: Rewards are subject to a minimum of ₹50 and a maximum cap of ₹2,000 per recovery.</small>
+    </div>
+
+    <!-- Account Balance & History Lookup -->
+    <div class="panel balance-lookup-card">
+      <div class="panel-header">
+        <h2>Check Your Reward Points</h2>
+        <span class="meta-tag">Student Lookup</span>
+      </div>
+      <p class="card-desc">Enter your registered campus or finder email to check your verified points balance and ledger transactions.</p>
+
+      <form id="lookup-form" class="lookup-form">
+        <div class="search-input-wrapper">
+          <input type="email" id="lookup-email" placeholder="Enter student email (e.g. finder@college.edu)" required>
+          <button type="submit" class="button button-small" id="btn-lookup">Check Balance</button>
+        </div>
+      </form>
+
+      <div id="balance-result" class="balance-result-area" hidden>
+        <div class="balance-stats-row">
+          <div class="stat-box">
+            <small>Total Balance</small>
+            <strong id="bal-total-points">0</strong>
+            <span>Points</span>
+          </div>
+          <div class="stat-box">
+            <small>Estimated Programme Value</small>
+            <strong id="bal-total-rupees">₹0.00</strong>
+            <span>INR Value</span>
+          </div>
+          <div class="stat-box">
+            <small>Verified Returns</small>
+            <strong id="bal-approved-count">0</strong>
+            <span>Recoveries</span>
+          </div>
+        </div>
+
+        <div class="transactions-section">
+          <h3>Transaction History</h3>
+          <div id="tx-history-container" class="tx-history-list"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Program Transparency Disclaimer -->
+  <aside class="rewards-disclaimer-box" role="note">
+    <strong>Transparency Notice:</strong> Reward points are an institutional recognition program for campus integrity. They do not constitute a commercial banking balance, electronic money, or guaranteed cash withdrawal. Points may be redeemed for college-approved campus privileges, vouchers, or non-cash perks under published guidelines.
+  </aside>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script defer src="/static/js/rewards.js"></script>
+{% endblock %}

@@ -1,6 +1,5 @@
-
-import math
-import re
+﻿import math
+import unicodedata
 from datetime import date
 from difflib import SequenceMatcher
 
@@ -8,21 +7,40 @@ from app.db.models import ItemReport
 
 
 def normalize_text(value: str | None) -> str:
-    """Normalize text for basic lexical comparison."""
-    if not value:
+    """Normalize text while preserving Unicode letters and marks."""
+
+    if not isinstance(value, str) or not value.strip():
         return ""
 
-    return " ".join(
-        re.findall(r"[a-z0-9]+", value.lower())
-    )
+    value = value.casefold()
+    tokens = []
+    current_token = []
+
+    for character in value:
+        category = unicodedata.category(character)
+
+        # Preserve letters, numbers, and combining marks.
+        if category.startswith(("L", "N")) or (
+            category.startswith("M") and current_token
+        ):
+            current_token.append(character)
+
+        elif current_token:
+            tokens.append("".join(current_token))
+            current_token = []
+
+    if current_token:
+        tokens.append("".join(current_token))
+
+    return " ".join(tokens)
 
 
+def text_similarity(
+    a: str | None,
+    b: str | None,
+) -> float:
+    """Calculate lexical similarity, not semantic similarity."""
 
-def text_similarity(a: str, b: str) -> float:
-    """
-    Baseline lexical similarity.
-    This is NOT semantic embedding similarity.
-    """
     a = normalize_text(a)
     b = normalize_text(b)
 
@@ -37,6 +55,7 @@ def attribute_similarity(
     found: ItemReport,
 ) -> float:
     """Compare attributes available in both reports."""
+
     fields = ("category", "brand", "model", "color")
     scores = []
 
@@ -44,12 +63,11 @@ def attribute_similarity(
         left = normalize_text(getattr(lost, field, None))
         right = normalize_text(getattr(found, field, None))
 
-        # Missing information should not count as a mismatch.
+        # Do not penalize a missing attribute as a mismatch.
         if not left or not right:
             continue
 
         if field == "category":
-            # Category is expected to agree.
             scores.append(float(left == right))
         else:
             scores.append(text_similarity(left, right))
@@ -60,8 +78,9 @@ def attribute_similarity(
 def location_similarity(
     lost: ItemReport,
     found: ItemReport,
-) -> float:
-    """Score proximity when both reports have coordinates."""
+) -> float | None:
+    """Calculate geographic proximity when coordinates are available."""
+
     coordinates = (
         lost.latitude,
         lost.longitude,
@@ -70,7 +89,7 @@ def location_similarity(
     )
 
     if any(value is None for value in coordinates):
-        return 0.0
+        return None
 
     lat1, lon1, lat2, lon2 = map(math.radians, coordinates)
 
@@ -84,22 +103,28 @@ def location_similarity(
         * math.sin(dlon / 2) ** 2
     )
 
+    # Guard against floating-point rounding at the boundaries.
+    haversine = max(0.0, min(1.0, haversine))
+
     distance_km = 6371.0 * 2 * math.asin(
-        min(1.0, math.sqrt(haversine))
+        math.sqrt(haversine)
     )
 
-    # Full score at the same location; decays with distance.
+    # Nearby locations score higher than distant locations.
     return math.exp(-distance_km / 2.0)
 
 
 def time_similarity(
-    lost_date: date,
-    found_date: date,
-) -> float:
-    """Prefer reports with nearby event dates."""
+    lost_date: date | None,
+    found_date: date | None,
+) -> float | None:
+    """Calculate event-date proximity when dates are available."""
+
+    if lost_date is None or found_date is None:
+        return None
+
     gap_days = abs((found_date - lost_date).days)
 
-    # Full score on the same day, decaying over time.
     return math.exp(-gap_days / 7.0)
 
 
@@ -107,10 +132,8 @@ def rank_candidate(
     lost: ItemReport,
     found: ItemReport,
 ) -> dict:
-    """
-    Baseline ranking. Visual and semantic embeddings
-    will be integrated in the next stage.
-    """
+    """Calculate a baseline score using text and metadata."""
+
     text_score = text_similarity(
         f"{lost.item_name} {lost.description}",
         f"{found.item_name} {found.description}",
@@ -123,8 +146,6 @@ def rank_candidate(
         found.event_date,
     )
 
-    # The available signals are renormalized because
-    # the image model has not been integrated yet.
     weights = {
         "text": 0.30,
         "attributes": 0.15,
@@ -132,21 +153,30 @@ def rank_candidate(
         "time": 0.08,
     }
 
-    available_weight = sum(weights.values())
+    components = {
+        "text": text_score,
+        "attributes": attribute_score,
+    }
 
-    total = (
-        weights["text"] * text_score
-        + weights["attributes"] * attribute_score
-        + weights["location"] * location_score
-        + weights["time"] * time_score
+    if location_score is not None:
+        components["location"] = location_score
+
+    if time_score is not None:
+        components["time"] = time_score
+
+    available_weight = sum(
+        weights[key] for key in components
+    )
+
+    total = sum(
+        weights[key] * value
+        for key, value in components.items()
     ) / available_weight
 
     return {
         "score": round(total * 100, 2),
         "components": {
-            "text": round(text_score, 4),
-            "attributes": round(attribute_score, 4),
-            "location": round(location_score, 4),
-            "time": round(time_score, 4),
+            key: round(value, 4)
+            for key, value in components.items()
         },
     }

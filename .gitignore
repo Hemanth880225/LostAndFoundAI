@@ -1,0 +1,83 @@
+
+# ==============================
+# Python
+# ==============================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# ==============================
+# Virtual environments
+# ==============================
+.venv/
+venv/
+env/
+ENV/
+
+# ==============================
+# Environment variables and secrets
+# ==============================
+.env
+.env.*
+!.env.example
+
+# ==============================
+# Local databases and database files
+# ==============================
+*.db
+*.sqlite
+*.sqlite3
+*.db-journal
+
+# ==============================
+# Uploaded files and generated data
+# ==============================
+uploads/*
+!uploads/.gitkeep
+
+# ==============================
+# Test and coverage artifacts
+# ==============================
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+.tox/
+.nox/
+
+# ==============================
+# Logs and temporary files
+# ==============================
+*.log
+logs/
+tmp/
+temp/
+*.tmp
+
+# ==============================
+# Model and ML artifacts
+# ==============================
+*.pt
+*.pth
+*.onnx
+*.safetensors
+models/
+
+# ==============================
+# IDE and editor files
+# ==============================
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# ==============================
+# Operating system files
+# ==============================
+.DS_Store
+Thumbs.db
+desktop.ini

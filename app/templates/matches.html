@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Potential Matches — Foundly{% endblock %}
+
+{% block content %}
+<section class="wrap matches-page" data-id="{{ report_id }}">
+  <a href="/reports/{{ report_id }}" class="back-link">← Back to report #{{ report_id }}</a>
+
+  <div class="page-hero-text">
+    <div class="eyebrow">AI SIMILARITY RANKING</div>
+    <h1>Potential matches</h1>
+    <p id="matches-intro" class="lead">Comparing report #{{ report_id }} with active community listings.</p>
+  </div>
+
+  <div class="match-notice">
+    <span>✳</span>
+    <p>A match score reflects multi-modal similarity across visual embeddings, descriptions, physical attributes, location, and date. It is <b>not a calibrated statistical probability of ownership</b>. Always verify identifying private marks before claiming an item.</p>
+  </div>
+
+  <!-- Loading / Empty / Error State Panel -->
+  <div id="matches-state" class="state-panel">
+    <div class="skeleton card-skeleton" style="height:120px;margin-bottom:12px;"></div>
+    <div class="skeleton card-skeleton" style="height:120px;"></div>
+  </div>
+
+  <!-- Candidate Matches List -->
+  <div id="matches-list" class="match-list" style="display:none"></div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script defer src="/static/js/matches.js"></script>
+{% endblock %}

@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}Reviewer Dashboard — Foundly{% endblock %}
+
+{% block content %}
+<section class="wrap admin-review-page">
+  <div class="admin-header">
+    <div class="eyebrow"><span class="eyebrow-icon">🛡️</span> AUTHORIZED REVIEW OPERATIONS</div>
+    <h1>Claim Verification & Recovery Review</h1>
+    <p class="lead">Examine submitted claims, inspect private ownership evidence, coordinate handovers, and credit verified finder rewards.</p>
+  </div>
+
+  <!-- Reviewer Key Authentication Bar -->
+  <div class="panel admin-auth-card">
+    <div class="auth-bar-layout">
+      <div class="auth-status-indicator">
+        <span id="auth-status-icon">🔒</span>
+        <div>
+          <strong id="auth-status-title">Reviewer Key Required</strong>
+          <small id="auth-status-desc">Provide your authorized X-Reviewer-Key to unlock administrative endpoints.</small>
+        </div>
+      </div>
+      <div class="auth-input-group">
+        <input type="password" id="input-reviewer-key" placeholder="Enter X-Reviewer-Key…" autocomplete="off">
+        <button type="button" class="button button-small" id="btn-save-key">Authenticate</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filter & Tab Navigation -->
+  <div class="admin-filter-bar">
+    <div class="filter-pills" id="admin-status-filters" role="tablist">
+      <button type="button" class="category-pill active" data-status="all">All Claims</button>
+      <button type="button" class="category-pill" data-status="submitted">Submitted</button>
+      <button type="button" class="category-pill" data-status="under_review">Under Review</button>
+      <button type="button" class="category-pill" data-status="additional_information_required">Info Required</button>
+      <button type="button" class="category-pill" data-status="suspected_fraud_review">Suspected Fraud</button>
+      <button type="button" class="category-pill" data-status="approved">Approved</button>
+      <button type="button" class="category-pill" data-status="completed">Completed</button>
+    </div>
+  </div>
+
+  <!-- Claims List Section -->
+  <div class="admin-main-grid">
+    <div class="claims-list-panel panel">
+      <div class="panel-header">
+        <h2 id="claims-count-heading">Claims Pending Review</h2>
+        <button type="button" class="button-text-subtle" id="btn-refresh-claims">Refresh</button>
+      </div>
+      <div id="claims-list-container" class="admin-claims-list">
+        <div class="inline-state">Enter reviewer key and click Authenticate to load claims.</div>
+      </div>
+    </div>
+
+    <!-- Active Claim Inspection Dossier Panel -->
+    <div class="dossier-panel panel" id="dossier-panel">
+      <div id="dossier-placeholder" class="dossier-placeholder">
+        <span class="placeholder-icon">📋</span>
+        <h3>Select a claim to inspect</h3>
+        <p>Choose any claim from the list on the left to review reports, private evidence, and decide outcomes.</p>
+      </div>
+
+      <div id="dossier-content" class="dossier-content" hidden>
+        <!-- Dossier populated dynamically by admin-review.js -->
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script defer src="/static/js/admin-review.js"></script>
+{% endblock %}

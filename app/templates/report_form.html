@@ -1,0 +1,330 @@
+{% extends "base.html" %}
+{% block title %}Report a {{ report_type }} item — Foundly{% endblock %}
+
+{% block content %}
+<section class="wrap form-page">
+  <a href="/browse" class="back-link">← Back to reports</a>
+
+  <div class="form-heading">
+    <div class="eyebrow">HELP US MAKE A CONNECTION</div>
+    <h1>{% if report_type == 'lost' %}Tell us what you’ve lost.{% else %}Tell us what you’ve found.{% endif %}</h1>
+    <p>Share the details you know. You can upload multiple photographs and specify campus or transit locations.</p>
+  </div>
+
+  <div class="form-layout">
+    <form id="report-form" class="panel report-form" data-type="{{ report_type }}" novalidate>
+      
+      <!-- Section A: Item Information -->
+      <div class="form-section-title">
+        <span class="section-count">A</span>
+        <div>
+          <h2>Item Information</h2>
+          <p>Key physical traits and characteristics that help people recognize it.</p>
+        </div>
+      </div>
+
+      <!-- Optional Product Link Auto-fill Banner -->
+      <div class="product-enrich-box">
+        <div class="enrich-header">
+          <span class="enrich-icon">🔗</span>
+          <label for="product-url-input">Auto-fill from E-Commerce Link <span class="optional">OPTIONAL</span></label>
+        </div>
+        <div class="enrich-input-group">
+          <input
+            type="url"
+            id="product-url-input"
+            placeholder="Paste product link (Amazon, Dell, Apple, Wildcraft, etc.)…"
+            aria-label="Product e-commerce URL"
+          >
+          <button type="button" class="button button-light button-small" id="btn-enrich-product">Auto-fill</button>
+        </div>
+        <small id="enrich-status" class="field-hint">Extracts title, brand, category, and color automatically with security verification.</small>
+      </div>
+
+      <div class="field-grid">
+        <label class="field field-wide">
+          <span>Item Name <span class="required">*</span></span>
+          <input name="item_name" required minlength="2" maxlength="120" placeholder="e.g. Wildcraft Trailblazer Backpack or House Keys">
+          <small class="field-error">Please provide a descriptive item name (2-120 characters).</small>
+        </label>
+
+        <label class="field">
+          <span>Category <span class="required">*</span></span>
+          <select name="category" required>
+            <option value="">Select a category</option>
+            <option value="Backpack">Backpack</option>
+            <option value="Handbag">Handbag / Purse</option>
+            <option value="Suitcase">Suitcase / Luggage</option>
+            <option value="Duffel Bag">Duffel Bag</option>
+            <option value="Tote Bag">Tote Bag</option>
+            <option value="Water Bottle">Water Bottle / Flask</option>
+            <option value="Smartphone">Smartphone / Mobile</option>
+            <option value="Laptop">Laptop / Notebook</option>
+            <option value="Tablet">Tablet / iPad</option>
+            <option value="Wallet">Wallet / Cardholder</option>
+            <option value="Keys">Keys / Keyring</option>
+            <option value="Earphones">Earphones / AirPods</option>
+            <option value="Headphones">Headphones</option>
+            <option value="Watch">Watch / Smartwatch</option>
+            <option value="Glasses">Glasses / Sunglasses</option>
+            <option value="Umbrella">Umbrella</option>
+            <option value="Lunchbox">Lunchbox / Food Container</option>
+            <option value="Book">Book / Notebook</option>
+            <option value="ID / Documents">ID / Documents</option>
+            <option value="Clothing">Clothing / Jacket</option>
+            <option value="Other">Other / Miscellaneous</option>
+          </select>
+          <small class="field-error">Please choose a category.</small>
+        </label>
+
+        <label class="field">
+          <span>Brand (Optional)</span>
+          <input name="brand" maxlength="100" placeholder="e.g. Nike, Apple, Wildcraft, Dell">
+        </label>
+
+        <label class="field">
+          <span>Primary Color</span>
+          <select name="primary_color" id="field-primary-color">
+            <option value="">Select color (if known)</option>
+            <option value="Black">Black</option>
+            <option value="White">White</option>
+            <option value="Silver">Silver</option>
+            <option value="Grey">Grey</option>
+            <option value="Blue">Blue</option>
+            <option value="Navy Blue">Navy Blue</option>
+            <option value="Red">Red</option>
+            <option value="Green">Green</option>
+            <option value="Yellow">Yellow</option>
+            <option value="Brown">Brown</option>
+            <option value="Pink">Pink</option>
+            <option value="Purple">Purple</option>
+            <option value="Orange">Orange</option>
+            <option value="Gold">Gold</option>
+            <option value="Maroon">Maroon</option>
+            <option value="Beige">Beige</option>
+          </select>
+        </label>
+
+        <label class="field">
+          <span>Secondary / Accent Color</span>
+          <select name="secondary_color" id="field-secondary-color">
+            <option value="">None / Solid</option>
+            <option value="White">White accents</option>
+            <option value="Grey">Grey accents</option>
+            <option value="Black">Black trim</option>
+            <option value="Red">Red details</option>
+            <option value="Blue">Blue accents</option>
+            <option value="Silver">Silver hardware</option>
+            <option value="Gold">Gold hardware</option>
+            <option value="Yellow">Yellow stripes</option>
+          </select>
+        </label>
+
+        <label class="field">
+          <span>Geometric Shape</span>
+          <select name="shape" id="field-shape">
+            <option value="">Default / Unspecified</option>
+            <option value="Rectangular">Rectangular</option>
+            <option value="Circular">Circular / Round</option>
+            <option value="Cylindrical">Cylindrical (Bottle / Tube)</option>
+            <option value="Oval">Oval</option>
+            <option value="Square">Square</option>
+            <option value="Rounded">Rounded corners</option>
+            <option value="Irregular">Irregular</option>
+          </select>
+        </label>
+
+        <label class="field">
+          <span>Physical Size</span>
+          <select name="size_category" id="field-size">
+            <option value="">Unspecified</option>
+            <option value="Small">Small (pocket-sized / compact)</option>
+            <option value="Medium">Medium (standard size)</option>
+            <option value="Large">Large (bulky / oversized)</option>
+          </select>
+        </label>
+
+        <label class="field" id="capacity-field-group">
+          <span>Capacity (Volume in Litres)</span>
+          <input name="capacity_text" id="field-capacity" maxlength="50" placeholder="e.g. 25L, 750ml (for bags/bottles)">
+          <small class="field-hint">Relevant for backpacks, bottles, and storage devices.</small>
+        </label>
+
+        <label class="field">
+          <span>Material & Texture</span>
+          <select name="material" id="field-material">
+            <option value="">Select material (if known)</option>
+            <option value="Fabric/Canvas">Fabric / Canvas / Nylon</option>
+            <option value="Leather-like">Leather / Faux Leather</option>
+            <option value="Metal">Metal / Aluminium / Steel</option>
+            <option value="Plastic">Plastic / Polycarbonate</option>
+            <option value="Rubber/Silicone">Rubber / Silicone</option>
+            <option value="Transparent/Glass">Transparent / Glass</option>
+            <option value="Matte">Matte finish</option>
+            <option value="Glossy">Glossy finish</option>
+          </select>
+        </label>
+
+        <label class="field field-wide">
+          <span>Distinctive Features & Markings</span>
+          <input name="distinctive_marks" id="field-distinctive" maxlength="200" placeholder="e.g. Red Adidas keychain, Apple sticker on lid, scratched bottom left corner">
+          <small class="field-hint">High-specificity features carry high weight in AI matching.</small>
+        </label>
+
+        <label class="field field-wide">
+          <span>Description <span class="required">*</span></span>
+          <textarea name="description" required minlength="5" maxlength="2000" rows="4" placeholder="Describe the item, contents (without revealing secrets), state, or any other helpful identifying details."></textarea>
+          <small class="field-hint">Do not share passwords, PIN codes, device unlock patterns, or full private document numbers.</small>
+          <small class="field-error">Please provide at least 5 characters describing the item.</small>
+        </label>
+      </div>
+
+      <!-- Section B: Photos & Multi-Image Upload -->
+      <div class="form-section-title second-section">
+        <span class="section-count">B</span>
+        <div>
+          <h2>Photographs <span class="optional">OPTIONAL</span></h2>
+          <p>Upload multiple images (different angles, labels, distinctive marks). Up to 10 photos.</p>
+        </div>
+      </div>
+
+      <div class="upload-box" id="upload-box" tabindex="0" role="button" aria-label="Drop photos here or click to browse">
+        <input id="image-file" type="file" multiple accept="image/jpeg,image/png,image/webp" hidden>
+        <span class="upload-icon">↑</span>
+        <b>Drop photos here or <span>browse files</span></b>
+        <small>JPEG, PNG, or WebP · Up to 5 MiB each · Up to 10 photos</small>
+      </div>
+
+      <div id="image-preview-grid" class="image-preview-grid" style="display:none"></div>
+
+      <!-- Section C: Location & Time -->
+      <div class="form-section-title second-section">
+        <span class="section-count">C</span>
+        <div>
+          <h2>Location and Time</h2>
+          <p>Where and approximately when was the item lost or discovered?</p>
+        </div>
+      </div>
+
+      <div class="field-grid">
+        <label class="field">
+          <span>Date {{ 'Lost' if report_type == 'lost' else 'Found' }} <span class="required">*</span></span>
+          <input name="event_date" id="field-event-date" type="date" required>
+          <small class="field-error">Please specify the date.</small>
+        </label>
+
+        <label class="field">
+          <span>Campus Building / Zone (Recommended)</span>
+          <select id="campus-location-select">
+            <option value="">Select campus zone…</option>
+            <option value="Central Library">Central Library</option>
+            <option value="Main Administration Building">Main Administration Building</option>
+            <option value="Science & Engineering Block">Science & Engineering Block</option>
+            <option value="Student Union & Canteen">Student Union & Canteen</option>
+            <option value="Campus Sports Complex">Campus Sports Complex</option>
+            <option value="Hostel Area & Student Residences">Hostel Area & Student Residences</option>
+            <option value="Bus & Auto-Rickshaw Stand">Bus & Auto-Rickshaw Stand</option>
+            <option value="Other / Off-Campus">Other / Off-Campus</option>
+          </select>
+        </label>
+
+        <label class="field field-wide">
+          <span>Location Description <span class="required">*</span></span>
+          <div class="location-input-row">
+            <input name="location_text" id="field-location-text" required minlength="2" maxlength="255" placeholder="e.g. Central Library, 2nd floor reading hall or Auto-rickshaw from Station">
+            <button type="button" class="button button-light button-small" id="btn-use-gps" title="Fill location using GPS">
+              <span>⌖</span>
+              <span id="gps-btn-label">Use GPS</span>
+            </button>
+          </div>
+          <small class="field-hint">GPS is optional and coordinates remain approximate to protect personal privacy.</small>
+          <small class="field-error">Please specify the location.</small>
+        </label>
+
+        <!-- Hidden coordinates fields -->
+        <input type="hidden" name="latitude" id="field-latitude">
+        <input type="hidden" name="longitude" id="field-longitude">
+
+        <label class="field field-wide">
+          <span>Transit / Journey Context (Optional)</span>
+          <select name="journey_context" id="field-journey">
+            <option value="Walking / On-Foot">Campus walking / On-foot</option>
+            <option value="Auto-Rickshaw">Auto-Rickshaw</option>
+            <option value="Taxi / Cab">Taxi / Cab</option>
+            <option value="City Bus">College / City Bus</option>
+            <option value="Train / Metro">Train / Railway Station / Metro</option>
+            <option value="Bicycle">Bicycle / 2-Wheeler</option>
+          </select>
+          <small class="field-hint">Helps match drivers and passengers who find forgotten bags.</small>
+        </label>
+      </div>
+
+      <!-- Section D: Contact & Submission -->
+      <div class="form-section-title second-section">
+        <span class="section-count">D</span>
+        <div>
+          <h2>Submission & Privacy</h2>
+          <p>Review notice and publish report to the community board.</p>
+        </div>
+      </div>
+
+      <div class="submission-notes">
+        <div class="note-row">
+          <span class="note-bullet">✓</span>
+          <span>Your listing will be published immediately to the public directory and analyzed for matches.</span>
+        </div>
+        <div class="note-row">
+          <span class="note-bullet">✓</span>
+          <span>Private ownership verification details and sensitive evidence are kept private.</span>
+        </div>
+        <div class="note-row">
+          <span class="note-bullet">✓</span>
+          <span>You will receive a Report ID to check potential matches and monitor claim requests.</span>
+        </div>
+      </div>
+
+      <div class="form-error" id="form-error" role="alert"></div>
+
+      <div class="form-submit">
+        <p>By publishing, you agree to Foundly community terms and campus lost property rules.</p>
+        <button type="submit" class="button" id="submit-report">
+          <span>Publish Report</span>
+          <span aria-hidden="true">↗</span>
+        </button>
+      </div>
+    </form>
+
+    <!-- Side Guidance Panel -->
+    <aside class="form-aside">
+      <div class="aside-art">
+        <div class="aside-heart">♡</div>
+        <div class="aside-caption">A few details can<br>make all the difference.</div>
+      </div>
+
+      <h3>Good to know</h3>
+      <ul>
+        <li><span>✓</span> <b>Photographs help:</b> Visual CLIP embeddings match even if keywords differ.</li>
+        <li><span>✓</span> <b>Incomplete details are fine:</b> Missing capacity or brand is never penalized.</li>
+        <li><span>✓</span> <b>Distinctive marks matter:</b> Stickers, scratches, and keychains carry high AI weight.</li>
+        <li><span>✓</span> <b>Location can be approximate:</b> Pick a campus building or enter nearby landmark.</li>
+      </ul>
+
+      <div class="safe-card">
+        <b>Travelling or Transit Finder?</b>
+        <p>If you are an auto-rickshaw or taxi driver who found an item without knowing the passenger, use our dedicated guest portal.</p>
+        <a href="/guest/found" class="text-link" style="margin-top:6px;display:inline-block">Guest Transit Finder Form →</a>
+      </div>
+
+      <div class="safe-card" style="margin-top:12px;background:#f0fdf4;border-color:#bbf7d0">
+        <b>Need a Secure Deposit Desk?</b>
+        <p>Find verified campus security stations, lost-property offices, and local police stations.</p>
+        <a href="/travel-handover" class="text-link" style="margin-top:6px;display:inline-block">Safe Handover Directory →</a>
+      </div>
+    </aside>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script defer src="/static/js/report-form.js"></script>
+{% endblock %}

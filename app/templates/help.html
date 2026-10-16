@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}How It Works & Safety Guidelines — Foundly{% endblock %}
+
+{% block content %}
+<section class="wrap help-page">
+  <div class="eyebrow">COMMUNITY & RECOVERY GUIDE</div>
+  <h1>Good to know<br><span>before you reconnect.</span></h1>
+  <p class="lead">Foundly connects honest finders, owners, and campus desks. Understand how our multimodal AI matching, safe handovers, and claims verification work.</p>
+
+  <div class="help-grid">
+    <article class="panel">
+      <span class="step-icon">✨</span>
+      <h2>1. Multimodal AI Similarity</h2>
+      <p>Our matching engine combines OpenAI CLIP visual embeddings with attribute analysis (category, color, shape, size, material, and distinctive marks like keychains or stickers). Match scores represent heuristic similarity, not definitive proof of ownership.</p>
+    </article>
+
+    <article class="panel">
+      <span class="step-icon">🔒</span>
+      <h2>2. Keep Identifying Secrets Private</h2>
+      <p>Never post passwords, device unlock patterns, full identity numbers, or sensitive financial documents in public listings. Keep one or two distinctive details private so you can verify ownership during a claim.</p>
+    </article>
+
+    <article class="panel">
+      <span class="step-icon">📍</span>
+      <h2>3. Safe Handover Points</h2>
+      <p>Never arrange meetings in private or secluded areas. Use our <a href="/travel-handover" class="text-link">Safe Handover Directory</a> to find verified campus security desks, official lost-property offices, and local police stations.</p>
+    </article>
+
+    <article class="panel">
+      <span class="step-icon">🛡️</span>
+      <h2>4. Verified Claims & Review</h2>
+      <p>Found items are reclaimed through verified claims. Reviewers inspect ownership details and supplemental evidence (invoices, receipts, serial numbers). All private documents are stored in secure directories outside public web roots.</p>
+    </article>
+
+    <article class="panel">
+      <span class="step-icon">🛺</span>
+      <h2>5. Guest & Transit Recovery</h2>
+      <p>Auto-rickshaw, taxi, and bus finders do not need an account or government ID to report a forgotten item. Finders receive a secure Case Reference and private secret key to coordinate with owners.</p>
+    </article>
+
+    <article class="panel">
+      <span class="step-icon">🏆</span>
+      <h2>6. Honest Finder Rewards</h2>
+      <p>To incentivize honest behavior, finders are eligible for value-based reward points (5 points = ₹1) based on verified item value. Points are credited to an immutable ledger only after confirmed physical return.</p>
+    </article>
+  </div>
+
+  <div class="help-cta-bar panel">
+    <div>
+      <h3>Ready to create or search a listing?</h3>
+      <p>Choose an action to get started immediately.</p>
+    </div>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;">
+      <a class="button" href="/report/lost">Report Lost Item <span>↗</span></a>
+      <a class="button button-light" href="/search/image">Photo Search 📷</a>
+      <a class="button button-subtle" href="/travel-handover">Safe Handover 📍</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

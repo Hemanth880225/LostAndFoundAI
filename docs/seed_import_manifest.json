@@ -1,0 +1,429 @@
+{
+  "dataset_name": "AI Lost and Found Mini Project",
+  "dry_run_timestamp": "2026-10-16T13:45:44.901313",
+  "pdf_source": "C:\\Users\\Hemanth\\Desktop\\AIMiniProject\\found_items_dataset_compressed.pdf",
+  "objects_detected": 8,
+  "total_photographs_found": 15,
+  "expected_image_embeddings": 15,
+  "expected_text_embeddings": 8,
+  "expected_attribute_records": 8,
+  "database_file": "C:\\Users\\Hemanth\\PycharmProjects\\LostAndFoundAI\\lost_found.db",
+  "existing_reports_count": 9,
+  "existing_images_count": 16,
+  "existing_embeddings_count": 24,
+  "notes_on_unsupplied_objects_9_and_10": "The supplied PDF title states 'AI Lost and Found Mini Project | 8 found-item records' and explicitly contains exactly 8 items (F001 to F008). No page or metadata was provided for items 9 and 10. In accordance with project safety rules, items 9 and 10 are flagged for user review rather than fabricated.",
+  "items": [
+    {
+      "seed_id": "F001",
+      "title": "White Wireless Earbuds with Charging Case",
+      "category": "Earphones",
+      "source_category": "Earphones",
+      "status": "found",
+      "color": "White",
+      "brand": null,
+      "model": null,
+      "location_text": "Library (Collection point: Library Office)",
+      "event_date": "2026-10-16",
+      "description": "White in-ear wireless earbuds in a rounded white charging case with silver-coloured trim and a small front indicator. Light scuffs/marks are visible. Brand and exact model are not confirmed. [Source: AI Lost and Found Mini Project dataset]",
+      "associated_photos": [
+        {
+          "photo_index": 1,
+          "format": "JPEG",
+          "resolution": "292x390",
+          "size_bytes": 10290,
+          "original_filename": "F001_photo_1.jpg"
+        },
+        {
+          "photo_index": 2,
+          "format": "JPEG",
+          "resolution": "292x390",
+          "size_bytes": 8054,
+          "original_filename": "F001_photo_2.jpg"
+        },
+        {
+          "photo_index": 3,
+          "format": "JPEG",
+          "resolution": "292x390",
+          "size_bytes": 7065,
+          "original_filename": "F001_photo_3.jpg"
+        }
+      ],
+      "inferred_metadata": {
+        "primary_color": "White",
+        "secondary_color": "Silver",
+        "is_multicolor": false,
+        "shape": "Oval",
+        "size_category": "Small",
+        "material": "Plastic",
+        "patterns": [],
+        "distinctive_features": [
+          "silver-coloured trim",
+          "front LED indicator",
+          "in-ear earbuds",
+          "light scuffs"
+        ]
+      },
+      "missing_or_unsupplied_fields": [
+        "exact_found_timestamp",
+        "finder_identity",
+        "contact_number",
+        "original_purchase_receipt"
+      ],
+      "import_status": "VALIDATED_READY_FOR_IMPORT"
+    },
+    {
+      "seed_id": "F002",
+      "title": "Dark Blue/Black WROGN Backpack",
+      "category": "Backpack",
+      "source_category": "Backpack",
+      "status": "found",
+      "color": "Dark Blue",
+      "brand": "WROGN",
+      "model": null,
+      "location_text": "Classroom (Collection point: Reception)",
+      "event_date": "2026-10-16",
+      "description": "Dark blue-black backpack with large vertical 'WROGN' lettering on the front pocket, a light-coloured stylized logo on the lower front pocket, multiple zippered compartments with orange zipper accents, black mesh padding on the back, and shoulder straps. [Source: AI Lost and Found Mini Project dataset]",
+      "associated_photos": [
+        {
+          "photo_index": 1,
+          "format": "JPEG",
+          "resolution": "443x591",
+          "size_bytes": 28367,
+          "original_filename": "F002_photo_1.jpg"
+        },
+        {
+          "photo_index": 2,
+          "format": "JPEG",
+          "resolution": "376x591",
+          "size_bytes": 29344,
+          "original_filename": "F002_photo_2.jpg"
+        }
+      ],
+      "inferred_metadata": {
+        "primary_color": "Dark Blue",
+        "secondary_color": "Black",
+        "is_multicolor": true,
+        "shape": "Curved / Rectangular",
+        "size_category": "Medium",
+        "material": "Fabric",
+        "patterns": [
+          "lettering",
+          "logo"
+        ],
+        "distinctive_features": [
+          "large vertical WROGN lettering",
+          "orange zipper pulls",
+          "padded mesh back",
+          "shoulder straps"
+        ]
+      },
+      "missing_or_unsupplied_fields": [
+        "exact_found_timestamp",
+        "finder_identity",
+        "contact_number",
+        "original_purchase_receipt"
+      ],
+      "import_status": "VALIDATED_READY_FOR_IMPORT"
+    },
+    {
+      "seed_id": "F003",
+      "title": "Silver HP Laptop",
+      "category": "Laptop",
+      "source_category": "Laptop",
+      "status": "found",
+      "color": "Silver",
+      "brand": "HP",
+      "model": null,
+      "location_text": "Library (Collection point: Library Office)",
+      "event_date": "2026-10-16",
+      "description": "Closed silver-coloured HP laptop with a centered HP logo on the lid and a small green cartoon-style sticker near the lower-right corner. The underside has a long ventilation grille and two long dark rubber strips. Minor marks or scuffs are visible. Exact model and specifications are not confirmed. [Source: AI Lost and Found Mini Project dataset]",
+      "associated_photos": [
+        {
+          "photo_index": 1,
+          "format": "JPEG",
+          "resolution": "461x259",
+          "size_bytes": 8077,
+          "original_filename": "F003_photo_1.jpg"
+        },
+        {
+          "photo_index": 2,
+          "format": "JPEG",
+          "resolution": "461x259",
+          "size_bytes": 11678,
+          "original_filename": "F003_photo_2.jpg"
+        }
+      ],
+      "inferred_metadata": {
+        "primary_color": "Silver",
+        "secondary_color": "Green",
+        "is_multicolor": false,
+        "shape": "Rectangular",
+        "size_category": "Medium",
+        "material": "Metal / Plastic",
+        "patterns": [
+          "sticker"
+        ],
+        "distinctive_features": [
+          "centered HP logo",
+          "small green cartoon sticker on lid",
+          "ventilation grille",
+          "dual rubber grip strips"
+        ]
+      },
+      "missing_or_unsupplied_fields": [
+        "exact_found_timestamp",
+        "finder_identity",
+        "contact_number",
+        "original_purchase_receipt"
+      ],
+      "import_status": "VALIDATED_READY_FOR_IMPORT"
+    },
+    {
+      "seed_id": "F004",
+      "title": "White 80W Charger with Cable",
+      "category": "Other",
+      "source_category": "Other",
+      "status": "found",
+      "color": "White",
+      "brand": null,
+      "model": "80W Adapter",
+      "location_text": "Campus Security Post (Collection point: Security Guard; Found location not specified)",
+      "event_date": "2026-10-16",
+      "description": "White wall charger with two round metal pins and '80W' printed on the adapter. A white charging cable is attached; the cable appears slightly discoloured/marked in places. Connector type and brand/model are not confirmed. [Source: AI Lost and Found Mini Project dataset]",
+      "associated_photos": [
+        {
+          "photo_index": 1,
+          "format": "JPEG",
+          "resolution": "515x915",
+          "size_bytes": 32152,
+          "original_filename": "F004_photo_1.jpg"
+        }
+      ],
+      "inferred_metadata": {
+        "primary_color": "White",
+        "secondary_color": null,
+        "is_multicolor": false,
+        "shape": "Rectangular",
+        "size_category": "Small",
+        "material": "Plastic",
+        "patterns": [],
+        "distinctive_features": [
+          "two round pins",
+          "'80W' printed on adapter body",
+          "attached white charging cable",
+          "slight cable discoloration"
+        ]
+      },
+      "missing_or_unsupplied_fields": [
+        "exact_found_timestamp",
+        "finder_identity",
+        "contact_number",
+        "original_purchase_receipt"
+      ],
+      "import_status": "VALIDATED_READY_FOR_IMPORT"
+    },
+    {
+      "seed_id": "F005",
+      "title": "Black John Jacobs Eyeglasses",
+      "category": "Glasses",
+      "source_category": "Glasses",
+      "status": "found",
+      "color": "Black",
+      "brand": "John Jacobs",
+      "model": null,
+      "location_text": "Football ground (Collection point: Reception)",
+      "event_date": "2026-10-16",
+      "description": "Black full-rim eyeglasses with clear lenses and a rectangular-to-square frame shape. 'JOHN JACOBS' text is visible on the inner temple. A small green marking/sticker appears near the right lens/temple area in the front view. Exact model and prescription details are not confirmed. [Source: AI Lost and Found Mini Project dataset]",
+      "associated_photos": [
+        {
+          "photo_index": 1,
+          "format": "JPEG",
+          "resolution": "332x591",
+          "size_bytes": 19692,
+          "original_filename": "F005_photo_1.jpg"
+        },
+        {
+          "photo_index": 2,
+          "format": "JPEG",
+          "resolution": "332x591",
+          "size_bytes": 15966,
+          "original_filename": "F005_photo_2.jpg"
+        }
+      ],
+      "inferred_metadata": {
+        "primary_color": "Black",
+        "secondary_color": "Green",
+        "is_multicolor": false,
+        "shape": "Rectangular",
+        "size_category": "Small",
+        "material": "Acetate / Plastic",
+        "patterns": [],
+        "distinctive_features": [
+          "full-rim rectangular black frame",
+          "clear lenses",
+          "'JOHN JACOBS' branding on inner temple",
+          "small green marking near right temple"
+        ]
+      },
+      "missing_or_unsupplied_fields": [
+        "exact_found_timestamp",
+        "finder_identity",
+        "contact_number",
+        "original_purchase_receipt"
+      ],
+      "import_status": "VALIDATED_READY_FOR_IMPORT"
+    },
+    {
+      "seed_id": "F006",
+      "title": "Black Bluetooth Neckband Earphones",
+      "category": "Earphones",
+      "source_category": "Earphones",
+      "status": "found",
+      "color": "Black",
+      "brand": null,
+      "model": null,
+      "location_text": "Campus Security Post (Collection point: Security Guard; Found location not specified)",
+      "event_date": "2026-10-16",
+      "description": "Black wireless neckband earphones with a flexible curved neckband, two elongated control/battery housings, wired leads to in-ear earbuds, and a small light-coloured clip or tag on one side. Brand and exact model are not confirmed. [Source: AI Lost and Found Mini Project dataset]",
+      "associated_photos": [
+        {
+          "photo_index": 1,
+          "format": "JPEG",
+          "resolution": "515x915",
+          "size_bytes": 33148,
+          "original_filename": "F006_photo_1.jpg"
+        }
+      ],
+      "inferred_metadata": {
+        "primary_color": "Black",
+        "secondary_color": "White",
+        "is_multicolor": false,
+        "shape": "Curved",
+        "size_category": "Small",
+        "material": "Rubber / Plastic",
+        "patterns": [],
+        "distinctive_features": [
+          "flexible curved neckband",
+          "two elongated battery housings",
+          "white clip/tag on cable",
+          "in-ear earbuds"
+        ]
+      },
+      "missing_or_unsupplied_fields": [
+        "exact_found_timestamp",
+        "finder_identity",
+        "contact_number",
+        "original_purchase_receipt"
+      ],
+      "import_status": "VALIDATED_READY_FOR_IMPORT"
+    },
+    {
+      "seed_id": "F007",
+      "title": "Grey American Tourister Backpack",
+      "category": "Backpack",
+      "source_category": "Backpack",
+      "status": "found",
+      "color": "Grey",
+      "brand": "American Tourister",
+      "model": null,
+      "location_text": "Library (Collection point: Library Office)",
+      "event_date": "2026-10-16",
+      "description": "Grey/olive-grey backpack with an 'AMERICAN TOURISTER' badge on the front, bright orange vertical accent lines, lighter grey stripe details, multiple zippered compartments, and padded mesh back with shoulder straps. The fabric shows visible creasing and wear. [Source: AI Lost and Found Mini Project dataset]",
+      "associated_photos": [
+        {
+          "photo_index": 1,
+          "format": "JPEG",
+          "resolution": "443x591",
+          "size_bytes": 31230,
+          "original_filename": "F007_photo_1.jpg"
+        },
+        {
+          "photo_index": 2,
+          "format": "JPEG",
+          "resolution": "443x591",
+          "size_bytes": 40098,
+          "original_filename": "F007_photo_2.jpg"
+        }
+      ],
+      "inferred_metadata": {
+        "primary_color": "Grey",
+        "secondary_color": "Orange",
+        "is_multicolor": true,
+        "shape": "Curved / Rectangular",
+        "size_category": "Medium",
+        "material": "Fabric",
+        "patterns": [
+          "vertical stripes"
+        ],
+        "distinctive_features": [
+          "'AMERICAN TOURISTER' badge",
+          "bright orange vertical lines",
+          "grey horizontal strap band",
+          "padded mesh back"
+        ]
+      },
+      "missing_or_unsupplied_fields": [
+        "exact_found_timestamp",
+        "finder_identity",
+        "contact_number",
+        "original_purchase_receipt"
+      ],
+      "import_status": "VALIDATED_READY_FOR_IMPORT"
+    },
+    {
+      "seed_id": "F008",
+      "title": "Black ART LINK A4 Longbook",
+      "category": "Book",
+      "source_category": "Book",
+      "status": "found",
+      "color": "Black",
+      "brand": "ART LINK",
+      "model": "World Star A4 Longbook (172 pages)",
+      "location_text": "Library basement (Collection point: Library Office)",
+      "event_date": "2026-10-16",
+      "description": "Black A4 longbook/notebook with 'ART LINK' branding and a motorcycle illustration in gold, bronze and white tones. The rear label indicates World Star, A4 longbook, approximately 20.5 \u00d7 28.5 cm and 172 pages. The cover has visible creases and scuffing. [Source: AI Lost and Found Mini Project dataset]",
+      "associated_photos": [
+        {
+          "photo_index": 1,
+          "format": "JPEG",
+          "resolution": "443x591",
+          "size_bytes": 23130,
+          "original_filename": "F008_photo_1.jpg"
+        },
+        {
+          "photo_index": 2,
+          "format": "JPEG",
+          "resolution": "443x591",
+          "size_bytes": 33449,
+          "original_filename": "F008_photo_2.jpg"
+        }
+      ],
+      "inferred_metadata": {
+        "primary_color": "Black",
+        "secondary_color": "Gold",
+        "is_multicolor": true,
+        "shape": "Rectangular",
+        "size_category": "Medium",
+        "dimensions_text": "20.5 x 28.5 cm",
+        "material": "Paper / Cardboard",
+        "patterns": [
+          "illustration"
+        ],
+        "distinctive_features": [
+          "gold/bronze motorcycle illustration on cover",
+          "'ART LINK' white badge",
+          "rear product label 'World Star'",
+          "172 pages",
+          "visible scuffs"
+        ]
+      },
+      "missing_or_unsupplied_fields": [
+        "exact_found_timestamp",
+        "finder_identity",
+        "contact_number",
+        "original_purchase_receipt"
+      ],
+      "import_status": "VALIDATED_READY_FOR_IMPORT"
+    }
+  ]
+}

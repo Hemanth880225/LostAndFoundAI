@@ -1,0 +1,218 @@
+{% extends "base.html" %}
+{% block title %}Report Lost Item in Transit — Foundly{% endblock %}
+
+{% block content %}
+<section class="wrap form-page">
+  <a class="back-link" href="/">← Back to Home</a>
+
+  <div class="form-heading">
+    <div class="eyebrow"><span class="eyebrow-icon">🧳</span> PASSENGER RECOVERY</div>
+    <h1>I Lost an Item in Transit</h1>
+    <p class="lead">Report belongings left behind in an auto-rickshaw, taxi, bus, or train. You don't need to know the driver's name or vehicle number.</p>
+  </div>
+
+  <div class="form-layout">
+    <form class="panel report-form" id="guest-lost-form" novalidate>
+      <!-- Step 1: Item Details -->
+      <div class="form-section-title">
+        <span class="section-count">1</span>
+        <div>
+          <h2>Item Description & Photos</h2>
+          <p>Describe your missing belonging as accurately as possible.</p>
+        </div>
+      </div>
+
+      <div class="field-grid">
+        <div class="field field-wide">
+          <label>Photos of Your Item <span class="optional">OPTIONAL BUT HELPS MATCHING</span></label>
+          <div class="upload-box" id="upload-box" role="button" tabindex="0">
+            <span class="upload-icon">📷</span>
+            <b>Drop photos here or <span>browse</span></b>
+            <small>Upload photos of the item or similar models to aid AI matching.</small>
+            <input type="file" id="file-input" name="files" multiple accept="image/jpeg,image/png,image/webp" style="display:none">
+          </div>
+          <div class="image-preview-grid" id="image-preview-grid"></div>
+        </div>
+
+        <div class="field">
+          <label for="item-name">Item Name <span class="required">*</span></label>
+          <input type="text" id="item-name" name="item_name" required placeholder="e.g. Black laptop bag, HP Spectre, Blue wallet" minlength="2">
+        </div>
+
+        <div class="field">
+          <label for="item-category">Category <span class="required">*</span></label>
+          <select id="item-category" name="category" required>
+            <option value="">Select a category…</option>
+            <option value="Electronics">Electronics</option>
+            <option value="Bags & Luggage" selected>Bags & Luggage</option>
+            <option value="Documents & Wallets">Documents & Wallets</option>
+            <option value="Clothing & Accessories">Clothing & Accessories</option>
+            <option value="Keys">Keys</option>
+            <option value="Glasses & Optical">Glasses & Optical</option>
+            <option value="Personal Items">Personal Items</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="item-color">Color <span class="optional">OPTIONAL</span></label>
+          <input type="text" id="item-color" name="color" placeholder="e.g. Navy Blue, Matte Black">
+        </div>
+
+        <div class="field">
+          <label for="item-brand">Brand / Manufacturer <span class="optional">OPTIONAL</span></label>
+          <input type="text" id="item-brand" name="brand" placeholder="e.g. Wildcraft, Dell, Samsonite">
+        </div>
+
+        <div class="field field-wide">
+          <label for="public-desc">General Description <span class="required">*</span></label>
+          <textarea id="public-desc" name="description" required placeholder="Exterior appearance and where you think you left it (e.g. 'Black backpack with two zipper compartments left on back seat of auto')." minlength="5"></textarea>
+        </div>
+      </div>
+
+      <!-- Step 2: Route & Journey Information -->
+      <div class="form-section-title second-section">
+        <span class="section-count">2</span>
+        <div>
+          <h2>Journey & Transit Route</h2>
+          <p>Where and when did you travel? Unknown details can be left blank.</p>
+        </div>
+      </div>
+
+      <div class="field-grid">
+        <div class="field field-wide">
+          <label>Mode of Transit</label>
+          <div class="journey-type-grid" id="journey-types">
+            <button type="button" class="journey-btn active" data-type="auto_rickshaw"><span>🛺</span>Auto-Rickshaw</button>
+            <button type="button" class="journey-btn" data-type="taxi"><span>🚕</span>Taxi / Cab</button>
+            <button type="button" class="journey-btn" data-type="bus"><span>🚌</span>Bus</button>
+            <button type="button" class="journey-btn" data-type="train"><span>🚆</span>Train</button>
+            <button type="button" class="journey-btn" data-type="metro"><span>🚇</span>Metro</button>
+            <button type="button" class="journey-btn" data-type="walking"><span>🚶</span>Walking</button>
+            <button type="button" class="journey-btn" data-type="other"><span>📍</span>Other</button>
+          </div>
+          <input type="hidden" id="journey-type" name="journey_type" value="auto_rickshaw">
+        </div>
+
+        <div class="field">
+          <label for="pickup-loc">Boarding / Pickup Area <span class="optional">OPTIONAL</span></label>
+          <input type="text" id="pickup-loc" name="pickup_location" placeholder="e.g. Deccan Gymkhana or Camp">
+        </div>
+
+        <div class="field">
+          <label for="dropoff-loc">Alighting / Drop-off Area <span class="optional">OPTIONAL</span></label>
+          <input type="text" id="dropoff-loc" name="dropoff_location" placeholder="e.g. Pune Railway Station">
+        </div>
+
+        <div class="field">
+          <label for="location-text">Estimated Location / Area <span class="required">*</span></label>
+          <input type="text" id="location-text" name="location_text" required placeholder="e.g. En route to Pune Railway Station" minlength="2">
+        </div>
+
+        <div class="field">
+          <label for="approx-time">Approximate Time of Loss</label>
+          <input type="text" id="approx-time" name="approximate_time" placeholder="e.g. 09:15 AM or Morning">
+        </div>
+
+        <div class="field field-wide">
+          <label for="route-notes">Route Details / Driver Remarks <span class="optional">OPTIONAL</span></label>
+          <input type="text" id="route-notes" name="route_notes" placeholder="e.g. Took Sancheti bridge route, paid via UPI or cash">
+        </div>
+      </div>
+
+      <!-- Step 3: Private Ownership Evidence -->
+      <div class="form-section-title second-section">
+        <span class="section-count">3</span>
+        <div>
+          <h2>Private Ownership Verification Details</h2>
+          <p>These details are encrypted and kept strictly confidential. Used to prove your ownership against found reports.</p>
+        </div>
+      </div>
+
+      <div class="private-box">
+        <div class="private-header">
+          <span>🔒</span> PRIVATE EVIDENCE OF OWNERSHIP
+        </div>
+        <div class="field" style="margin-bottom:12px;">
+          <label for="private-contents">Interior Contents (Secret details only owner knows)</label>
+          <textarea id="private-contents" name="private_contents" placeholder="e.g. Inside the main pocket: blue notebook with name written inside, USB-C charger, and yellow keychain."></textarea>
+          <span class="field-hint">Never shown publicly. Matching finders or reviewers verify this.</span>
+        </div>
+
+        <div class="field">
+          <label for="distinctive-marks">Distinctive Marks / Serial Number / Stickers</label>
+          <input type="text" id="distinctive-marks" name="distinctive_marks" placeholder="e.g. Small tear near base, company asset sticker, or unique keychain">
+        </div>
+      </div>
+
+      <!-- Step 4: Contact Information -->
+      <div class="form-section-title second-section">
+        <span class="section-count">4</span>
+        <div>
+          <h2>How Should We Notify You?</h2>
+          <p>Your contact details will not be shared with drivers or finders directly.</p>
+        </div>
+      </div>
+
+      <div class="field-grid">
+        <div class="field field-wide">
+          <label for="contact-val">Email or Mobile Number <span class="required">*</span></label>
+          <input type="text" id="contact-val" name="contact_value" required placeholder="e.g. student@college.edu or 9876543210">
+          <input type="hidden" id="contact-method" name="contact_method" value="email">
+          <span class="field-hint">Used strictly for match alerts and coordination. Kept private from other users.</span>
+        </div>
+      </div>
+
+      <div class="form-submit">
+        <div>
+          <button type="submit" class="button" id="btn-submit">
+            <span>Register Lost Item Report</span>
+          </button>
+        </div>
+        <p>No account required. You will receive a secure case reference to track matches.</p>
+      </div>
+
+      <div class="form-error" id="form-error" style="display:none"></div>
+    </form>
+
+    <aside class="form-aside">
+      <div class="panel" style="padding:22px;">
+        <h3>Passenger Recovery Assurance</h3>
+        <ul>
+          <li><span>1</span> <strong>AI Match Scanning:</strong> Scans all auto, taxi, and transit reports instantly.</li>
+          <li><span>2</span> <strong>Route Corroboration:</strong> Matches pickup and drop-off areas even without GPS.</li>
+          <li><span>3</span> <strong>Private Verification:</strong> Only verified owners can view handover codes.</li>
+          <li><span>4</span> <strong>Safe Handover:</strong> Hand over occurs at verified public desks.</li>
+        </ul>
+      </div>
+    </aside>
+  </div>
+</section>
+
+<!-- Receipt Modal -->
+<div id="receipt-modal" style="display:none; position:fixed; inset:0; background:rgba(15,23,42,0.7); backdrop-filter:blur(6px); z-index:99; align-items:center; justify-content:center; padding:20px;">
+  <div class="panel" style="max-width:540px; width:100%; padding:32px; background:#fff; border-radius:18px;">
+    <div style="font-size:2rem; margin-bottom:12px;">✅ Lost Item Registered</div>
+    <p style="color:#64748b; font-size:0.95rem; margin-bottom:20px;">
+      Your lost item report has been saved. Save your Case Reference to check candidate matches anytime:
+    </p>
+
+    <div class="case-receipt-hero" style="padding:20px; text-align:center;">
+      <small style="text-transform:uppercase; letter-spacing:1px; color:#94a3b8; font-weight:700;">Passenger Case Reference</small>
+      <div class="case-ref-tag" id="modal-case-ref">GL-XXXX-XXXX</div>
+      <div style="margin-top:10px;">
+        <span class="case-secret-pill" id="modal-secret-pill">Secret Key: ••••••••</span>
+      </div>
+    </div>
+
+    <div style="display:grid; gap:10px; margin-top:20px;">
+      <a href="#" class="button" id="modal-track-btn" style="width:100%;">Check Potential Matches & Status →</a>
+      <button type="button" class="button button-light" id="modal-copy-btn">Copy Reference & Secret Key</button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script defer src="/static/js/guest-lost.js"></script>
+{% endblock %}

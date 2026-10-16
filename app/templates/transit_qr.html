@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}Transit Partner & QR Hub Generator — Foundly{% endblock %}
+
+{% block content %}
+<section class="wrap form-page">
+  <div class="form-heading">
+    <div class="eyebrow"><span class="eyebrow-icon">📱</span> TRANSIT & TRAVEL HUBS</div>
+    <h1>Configurable QR Access for Transport Providers</h1>
+    <p class="lead">Generate custom QR access landing cards for auto-rickshaw unions, taxi fleets, bus terminals, railway stations, campus shuttles, and hotels.</p>
+  </div>
+
+  <div class="form-layout">
+    <div class="panel" style="padding:28px;">
+      <h2 style="font-size:1.15rem; margin:0 0 16px 0;">Configure Station / Fleet Landing QR</h2>
+
+      <div class="field-grid">
+        <div class="field">
+          <label for="provider-select">Operator / Provider Type</label>
+          <select id="provider-select">
+            <option value="PuneAutoRickshawUnion" selected>Auto-Rickshaw Union / Fleet</option>
+            <option value="CityTaxiAssociation">City Taxi & Cab Association</option>
+            <option value="MetroTransitDesk">Metro Transit Helpdesk</option>
+            <option value="CentralRailwayHub">Central Railway Terminal</option>
+            <option value="CampusShuttleService">College / Campus Shuttle</option>
+            <option value="HotelConciergeDesk">Hotel / Hospitality Desk</option>
+            <option value="CustomProvider">Other / Custom Operator</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="hub-name-input">Hub, Stand, or Station Name</label>
+          <input type="text" id="hub-name-input" value="PuneRailwayStation" placeholder="e.g. PuneRailwayStation, SwargateStand">
+        </div>
+      </div>
+
+      <div style="margin-top:20px;">
+        <button type="button" class="button" id="btn-generate-qr">Generate Printable QR Code</button>
+      </div>
+
+      <div class="safe-card" style="margin-top:24px;">
+        <b>Operational Notice & Safety Standard</b>
+        <p>This utility enables transport operators to print voluntary recovery decals for passenger vehicles. Scanning drivers are reminded to park safely before reporting. LostAndFoundAI does not claim official commercial partnerships with unverified entities.</p>
+      </div>
+    </div>
+
+    <!-- QR Preview Card -->
+    <aside class="form-aside">
+      <div class="qr-preview-box">
+        <h3 id="preview-hub-title" style="font-size:1rem; margin:0 0 4px 0;">Pune Railway Station Stand</h3>
+        <small style="color:#64748b; display:block;" id="preview-provider-subtitle">Auto-Rickshaw Union / Fleet</small>
+
+        <div class="qr-svg-wrap" id="qr-svg-container">
+          <div style="width:160px; height:160px; display:grid; place-items:center; background:#f1f5f9; border-radius:8px;">
+            <span>Generating…</span>
+          </div>
+        </div>
+
+        <p style="font-size:0.78rem; color:#64748b; margin:6px 0 14px 0;">Scan to open lightweight guest report form instantly.</p>
+
+        <div style="display:grid; gap:8px;">
+          <a href="#" class="button button-small" id="qr-test-link" target="_blank" style="width:100%;">Test Landing URL ↗</a>
+          <button type="button" class="button button-light button-small" id="btn-copy-url">Copy Destination URL</button>
+        </div>
+      </div>
+    </aside>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script defer src="/static/js/transit-qr.js"></script>
+{% endblock %}

@@ -1,0 +1,262 @@
+{% extends "base.html" %}
+{% block title %}Report Found Item (Guest / Transit) — Foundly{% endblock %}
+
+{% block content %}
+<section class="wrap form-page">
+  <a class="back-link" href="/">← Back to Home</a>
+
+  <div class="form-heading">
+    <div class="eyebrow"><span class="eyebrow-icon">🛺</span> GUEST & TRANSIT RECOVERY</div>
+    <h1>I Found an Item</h1>
+    <p class="lead">Report an item left in an auto-rickshaw, taxi, train, bus, or public area. No account or government ID required.</p>
+  </div>
+
+  <!-- Mandatory Driver / Finder Safety Banner -->
+  <div class="driver-safety-banner">
+    <span class="safety-icon">⚠️</span>
+    <div>
+      <strong>Driver Safety Warning:</strong>
+      <span>Please park your vehicle safely before filling out this report. Never interact with your phone while driving or operating a vehicle.</span>
+    </div>
+  </div>
+
+  <div class="form-layout">
+    <form class="panel report-form" id="guest-found-form" novalidate>
+      <!-- Step 1: Photos & Item Identification -->
+      <div class="form-section-title">
+        <span class="section-count">1</span>
+        <div>
+          <h2>Item Photographs & Basic Details</h2>
+          <p>Provide clear photos and a general item description.</p>
+        </div>
+      </div>
+
+      <div class="field-grid">
+        <div class="field field-wide">
+          <label>Photographs <span class="optional">OPTIONAL BUT RECOMMENDED</span></label>
+          <div class="upload-box" id="upload-box" role="button" tabindex="0">
+            <span class="upload-icon">📷</span>
+            <b>Drop photos here or <span>browse</span></b>
+            <small>JPEG, PNG, or WebP up to 5MB each. You can select multiple images.</small>
+            <input type="file" id="file-input" name="files" multiple accept="image/jpeg,image/png,image/webp" style="display:none">
+          </div>
+          <div class="image-preview-grid" id="image-preview-grid"></div>
+        </div>
+
+        <div class="field">
+          <label for="item-name">What did you find? <span class="required">*</span></label>
+          <input type="text" id="item-name" name="item_name" required placeholder="e.g. Blue cloth bag, Specs case, Backpack" minlength="2">
+        </div>
+
+        <div class="field">
+          <label for="item-category">Category <span class="required">*</span></label>
+          <select id="item-category" name="category" required>
+            <option value="">Select a category…</option>
+            <option value="Bags & Luggage">Bags & Luggage</option>
+            <option value="Clothing & Accessories">Clothing & Accessories</option>
+            <option value="Electronics">Electronics</option>
+            <option value="Documents & Wallets">Documents & Wallets</option>
+            <option value="Keys">Keys</option>
+            <option value="Glasses & Optical">Glasses & Optical</option>
+            <option value="Personal Items" selected>Personal Items</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="item-color">Primary Color <span class="optional">OPTIONAL</span></label>
+          <input type="text" id="item-color" name="color" placeholder="e.g. Navy Blue, Black, Red">
+        </div>
+
+        <div class="field">
+          <label for="item-brand">Brand / Make <span class="optional">OPTIONAL</span></label>
+          <input type="text" id="item-brand" name="brand" placeholder="e.g. Wildcraft, Fastrack, Generic">
+        </div>
+
+        <div class="field field-wide">
+          <label for="public-desc">Public Description <span class="required">*</span></label>
+          <textarea id="public-desc" name="description" required placeholder="General exterior description visible to anyone browsing (e.g. 'Blue zipper bag with shoulder strap left on rear seat'). Do NOT list sensitive interior contents here." minlength="5"></textarea>
+          <span class="field-hint">Keep this high-level so genuine owners can recognise their item.</span>
+        </div>
+      </div>
+
+      <!-- Step 2: Journey Context & Discovery Location -->
+      <div class="form-section-title second-section">
+        <span class="section-count">2</span>
+        <div>
+          <h2>Journey & Location Context</h2>
+          <p>Help matching algorithms correlate your route with passenger travel.</p>
+        </div>
+      </div>
+
+      <div class="field-grid">
+        <div class="field field-wide">
+          <label>Mode of Transit</label>
+          <div class="journey-type-grid" id="journey-types">
+            <button type="button" class="journey-btn active" data-type="auto_rickshaw"><span>🛺</span>Auto-Rickshaw</button>
+            <button type="button" class="journey-btn" data-type="taxi"><span>🚕</span>Taxi / Cab</button>
+            <button type="button" class="journey-btn" data-type="bus"><span>🚌</span>Bus</button>
+            <button type="button" class="journey-btn" data-type="train"><span>🚆</span>Train</button>
+            <button type="button" class="journey-btn" data-type="metro"><span>🚇</span>Metro</button>
+            <button type="button" class="journey-btn" data-type="walking"><span>🚶</span>Walking</button>
+            <button type="button" class="journey-btn" data-type="other"><span>📍</span>Other</button>
+          </div>
+          <input type="hidden" id="journey-type" name="journey_type" value="auto_rickshaw">
+        </div>
+
+        <div class="field">
+          <label for="pickup-loc">Pickup / Starting Area <span class="optional">OPTIONAL</span></label>
+          <input type="text" id="pickup-loc" name="pickup_location" placeholder="e.g. Deccan Gymkhana, Swargate">
+        </div>
+
+        <div class="field">
+          <label for="dropoff-loc">Drop-off / Destination Area <span class="optional">OPTIONAL</span></label>
+          <input type="text" id="dropoff-loc" name="dropoff_location" placeholder="e.g. Pune Railway Station, Platform 1">
+        </div>
+
+        <div class="field">
+          <label for="location-text">Discovery Location <span class="required">*</span></label>
+          <input type="text" id="location-text" name="location_text" required placeholder="e.g. Auto Stand outside Pune Station" minlength="2">
+        </div>
+
+        <div class="field">
+          <label for="approx-time">Discovery Time</label>
+          <input type="text" id="approx-time" name="approximate_time" placeholder="e.g. 10:30 AM / Morning">
+          <span class="field-hint">Automatically defaults to current time if left empty.</span>
+        </div>
+
+        <div class="field">
+          <label for="vehicle-id">Vehicle / Auto Number <span class="optional">OPTIONAL</span></label>
+          <input type="text" id="vehicle-id" name="vehicle_identifier" placeholder="e.g. MH 12 AB 1234 or Auto Badge #">
+        </div>
+
+        <div class="field">
+          <label for="btn-gps">GPS Location (Voluntary)</label>
+          <button type="button" class="button button-light button-small" id="btn-gps" style="width:100%; height:44px;">
+            <span>📍</span> Use My Current GPS
+          </button>
+          <input type="hidden" id="latitude" name="latitude">
+          <input type="hidden" id="longitude" name="longitude">
+          <span id="gps-status" class="field-hint">GPS is optional. Unknown locations will not be penalized.</span>
+        </div>
+      </div>
+
+      <!-- Step 3: Ownership Protection & Privacy -->
+      <div class="form-section-title second-section">
+        <span class="section-count">3</span>
+        <div>
+          <h2>Protected Ownership Details & Privacy</h2>
+          <p>These details will NEVER be displayed publicly. They are used exclusively to verify genuine owners.</p>
+        </div>
+      </div>
+
+      <div class="private-box">
+        <div class="private-header">
+          <span>🔒</span> PROTECTED FROM PUBLIC LISTINGS
+        </div>
+        <div class="field" style="margin-bottom:12px;">
+          <label for="private-contents">Interior Contents / Items Inside <span class="optional">PROTECTED</span></label>
+          <textarea id="private-contents" name="private_contents" placeholder="e.g. Inside the bag there are three cotton shirts, a steel water bottle, and prescription glasses in a black case."></textarea>
+          <span class="field-hint">This remains private and will be requested from claimants during verification.</span>
+        </div>
+
+        <div class="field">
+          <label for="distinctive-marks">Distinctive Marks / Scratches / Stickers <span class="optional">PROTECTED</span></label>
+          <input type="text" id="distinctive-marks" name="distinctive_marks" placeholder="e.g. Red ribbon tied to handle, small stitch repair near zipper">
+        </div>
+      </div>
+
+      <!-- Step 4: Contact & Anonymity Choice -->
+      <div class="form-section-title second-section">
+        <span class="section-count">4</span>
+        <div>
+          <h2>Follow-up & Handover Preferences</h2>
+          <p>Choose whether to receive follow-up or remain completely anonymous.</p>
+        </div>
+      </div>
+
+      <div class="field-grid">
+        <div class="field field-wide" style="display:flex; flex-direction:row; align-items:center; gap:10px;">
+          <input type="checkbox" id="is-anonymous" name="is_anonymous" style="width:20px; height:20px;">
+          <label for="is-anonymous" style="margin:0; cursor:pointer;">
+            <strong>I prefer to remain anonymous</strong> (No email or phone requested)
+          </label>
+        </div>
+
+        <div class="field" id="contact-field-wrap">
+          <label for="contact-val">Optional Contact Method</label>
+          <input type="text" id="contact-val" name="contact_value" placeholder="Enter mobile number or email for updates">
+          <input type="hidden" id="contact-method" name="contact_method" value="none">
+          <span class="field-hint">Never exposed publicly. Used only for system updates regarding this case.</span>
+        </div>
+
+        <div class="field">
+          <label for="handover-mode">Preferred Handover Location</label>
+          <select id="handover-mode" name="preferred_handover_mode">
+            <option value="official_facility" selected>Official Station / Police Facility</option>
+            <option value="staffed_public_desk">Staffed Public / Metro Desk</option>
+            <option value="undecided">Decide later with verified claimant</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-submit">
+        <div>
+          <button type="submit" class="button" id="btn-submit">
+            <span>Submit Found Item Report</span>
+          </button>
+        </div>
+        <p>By submitting, you confirm you are acting in good faith to return lost property. No account needed.</p>
+      </div>
+
+      <div class="form-error" id="form-error" style="display:none"></div>
+    </form>
+
+    <!-- Sidebar Guidelines -->
+    <aside class="form-aside">
+      <div class="panel" style="padding:22px;">
+        <h3>How Guest Recovery Works</h3>
+        <ul>
+          <li><span>1</span> <strong>Instant Case Code:</strong> You receive a unique reference code to check progress anytime.</li>
+          <li><span>2</span> <strong>Private Details:</strong> Hidden bag contents protect against impostors.</li>
+          <li><span>3</span> <strong>Masked Coordination:</strong> Chat with verified claimants without sharing your mobile number.</li>
+          <li><span>4</span> <strong>Safe Handover:</strong> Hand over at a public, staffed desk using a one-time code.</li>
+          <li><span>5</span> <strong>Optional Rewards:</strong> If eligible, link an account later to receive finder reward points.</li>
+        </ul>
+
+        <div class="safe-card" style="margin-top:20px;">
+          <b>Safe Handover Policy</b>
+          <p>Never meet anyone at a private home or deserted street. Always choose a railway helpdesk, police station, or campus security.</p>
+        </div>
+      </div>
+    </aside>
+  </div>
+</section>
+
+<!-- Submission Confirmation Modal -->
+<div id="receipt-modal" style="display:none; position:fixed; inset:0; background:rgba(15,23,42,0.7); backdrop-filter:blur(6px); z-index:99; align-items:center; justify-content:center; padding:20px;">
+  <div class="panel" style="max-width:540px; width:100%; padding:32px; background:#fff; border-radius:18px;">
+    <div style="font-size:2rem; margin-bottom:12px;">🎉 Report Submitted Successfully!</div>
+    <p style="color:#64748b; font-size:0.95rem; margin-bottom:20px;">
+      Your found item report has been registered. Save your case reference and tracking link below:
+    </p>
+
+    <div class="case-receipt-hero" style="padding:20px; text-align:center;">
+      <small style="text-transform:uppercase; letter-spacing:1px; color:#94a3b8; font-weight:700;">Case Reference</small>
+      <div class="case-ref-tag" id="modal-case-ref">GF-XXXX-XXXX</div>
+      <div style="margin-top:10px;">
+        <span class="case-secret-pill" id="modal-secret-pill">Secret Key: ••••••••</span>
+      </div>
+    </div>
+
+    <div style="display:grid; gap:10px; margin-top:20px;">
+      <a href="#" class="button" id="modal-track-btn" style="width:100%;">Open Case Tracking & Coordination Portal →</a>
+      <button type="button" class="button button-light" id="modal-copy-btn">Copy Reference & Secret Key</button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script defer src="/static/js/guest-found.js"></script>
+{% endblock %}

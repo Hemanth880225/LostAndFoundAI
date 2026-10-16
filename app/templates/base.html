@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f7f8fb">
+  <title>{% block title %}Foundly — Campus Lost & Found{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/app.css">
+  <script defer src="/static/js/app.js"></script>
+  {% block head %}{% endblock %}
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="/" aria-label="Foundly Lost & Found Home">
+    <span class="brand-mark">f</span>
+    <span>foundly<span class="brand-dot">.</span></span>
+  </a>
+
+  <nav class="nav" aria-label="Main navigation">
+    <a class="{% if active == 'home' %}active{% endif %}" href="/">Home</a>
+    <a class="{% if active == 'browse' %}active{% endif %}" href="/browse">Find Items</a>
+    <a class="{% if active == 'image-search' %}active{% endif %}" href="/search/image">Photo Search</a>
+    <a class="{% if active == 'report-lost' %}active{% endif %}" href="/report/lost">Report Lost</a>
+    <a class="{% if active == 'report-found' %}active{% endif %}" href="/report/found">Report Found</a>
+    <a class="{% if active == 'travel-handover' %}active{% endif %}" href="/travel-handover">Safe Handover</a>
+    <a class="{% if active == 'my-reports' or active == 'my-claims' %}active{% endif %}" href="/my-reports">My Activity</a>
+    <a class="{% if active == 'rewards' %}active{% endif %}" href="/rewards">Rewards</a>
+    <a class="{% if active == 'help' %}active{% endif %}" href="/help">Help</a>
+  </nav>
+
+  <div class="header-actions">
+    <a class="button button-small" href="/report/lost">Report an item <span aria-hidden="true">↗</span></a>
+    <button class="menu-toggle" aria-label="Toggle navigation menu" aria-expanded="false">☰</button>
+  </div>
+</header>
+
+<main id="main-content">
+  {% block content %}{% endblock %}
+</main>
+
+<footer class="footer">
+  <div class="footer-brand-col">
+    <a class="brand brand-footer" href="/">
+      <span class="brand-mark">f</span>
+      <span>foundly<span class="brand-dot">.</span></span>
+    </a>
+    <p class="footer-tagline">AI-assisted college and transit lost-and-found. Connecting honest finders with rightful owners.</p>
+  </div>
+  <div class="footer-links-col">
+    <div class="footer-group">
+      <h4>Discovery & Reporting</h4>
+      <a href="/browse">Browse all reports</a>
+      <a href="/search/image">Search with a photo</a>
+      <a href="/report/lost">Report lost item</a>
+      <a href="/report/found">Report found item</a>
+      <a href="/guest/found">Guest & transit finder</a>
+    </div>
+    <div class="footer-group">
+      <h4>Recovery & Safety</h4>
+      <a href="/travel-handover">Nearby safe handover locations</a>
+      <a href="/my-reports">Track my reports & cases</a>
+      <a href="/my-claims">Claim status lookup</a>
+      <a href="/rewards">Honest finder reward points</a>
+      <a href="/transit/qr">Vehicle & transit QR codes</a>
+      <a href="/help">Safety & recovery guidelines</a>
+    </div>
+    <div class="footer-group">
+      <h4>Staff & Portals</h4>
+      <a href="/admin/review">Reviewer verification portal</a>
+      <a href="/api/health">System status</a>
+    </div>
+  </div>
+</footer>
+
+<div class="footer-bottom wrap">
+  <small>© Foundly Campus Lost & Found. Confidential evidence and personal data are protected under institution privacy policies.</small>
+</div>
+
+<div class="toast-region" aria-live="polite" aria-atomic="true"></div>
+{% block scripts %}{% endblock %}
+</body>
+</html>

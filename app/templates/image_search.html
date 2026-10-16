@@ -1,0 +1,194 @@
+{% extends "base.html" %}
+{% block title %}Photo Search — Foundly{% endblock %}
+{% block content %}
+<section class="wrap image-search-wrap">
+  <a href="/browse" class="back-link">← Back to browse</a>
+  
+  <div class="page-hero-text">
+    <div class="eyebrow">IMAGE-ONLY DISCOVERY</div>
+    <h1>Search with a photo</h1>
+    <p class="lead">Upload photos of an item to search our database by visual similarity. No description, location, or metadata required.</p>
+  </div>
+
+  <div class="match-notice">
+    <span>✳</span>
+    <p>Visual search ranks reports using <b>CLIP neural embeddings</b> comparing query photos with stored report photos. High similarity indicates visual resemblance, not guaranteed ownership. Always check identifying marks before making a claim.</p>
+  </div>
+
+  <div class="image-search-controls panel">
+    <div class="form-section-title">
+      <span class="section-count">📷</span>
+      <div>
+        <h2>Upload query photos</h2>
+        <p>You can upload one or multiple photos (e.g. front, back, label, distinctive details).</p>
+      </div>
+    </div>
+
+    <div class="upload-box" id="query-upload-box" tabindex="0" role="button" aria-label="Drop query photos here or click to browse">
+      <input id="query-image-input" type="file" multiple accept="image/jpeg,image/png,image/webp" hidden>
+      <span class="upload-icon">↑</span>
+      <b>Drop query photos here or <span>browse files</span></b>
+      <small>JPEG, PNG, or WebP · Up to 5 MiB each · Up to 5 query photos</small>
+    </div>
+
+    <div id="query-preview-grid" class="image-preview-grid" style="display:none"></div>
+
+    <!-- AI Recognized Attributes for Query Photos -->
+    <div id="query-attribute-preview" class="detected-attribute-panel" style="display:none">
+      <div class="detected-attribute-header">
+        <span class="sparkle-icon">✨</span>
+        <b>AI Detected Attributes:</b>
+        <span id="detected-attribute-chips" class="detected-chips"></span>
+      </div>
+    </div>
+
+    <!-- Advanced Multi-Modal Attribute Filters Accordion -->
+    <div class="attribute-filter-accordion">
+      <button type="button" class="accordion-toggle-btn" id="toggle-attr-filter-btn" aria-expanded="false">
+        <span>⚙ Advanced Attribute Filters & Preferences</span>
+        <span class="accordion-arrow">▼</span>
+      </button>
+
+      <div id="attribute-filter-content" class="attribute-filter-grid" style="display:none">
+        <div class="filter-group full-width">
+          <label for="nl-query-input">Natural language query:</label>
+          <input id="nl-query-input" type="text" placeholder="e.g. Medium-sized black rectangular backpack with red keychain found yesterday...">
+        </div>
+
+        <div class="filter-group">
+          <label for="attr-category-select">Object Category:</label>
+          <select id="attr-category-select">
+            <option value="">Any category</option>
+            <option value="Backpack">Backpack</option>
+            <option value="Handbag">Handbag / Purse</option>
+            <option value="Water Bottle">Water Bottle / Flask</option>
+            <option value="Smartphone">Smartphone / Phone</option>
+            <option value="Wallet">Wallet / Cardholder</option>
+            <option value="Umbrella">Umbrella</option>
+            <option value="Keys">Keys / Keyring</option>
+            <option value="Earphones">Earphones / Headphones</option>
+            <option value="Laptop">Laptop / Notebook</option>
+            <option value="Watch">Watch / Smartwatch</option>
+            <option value="Glasses">Glasses / Spectacles</option>
+            <option value="Book">Book / Textbook</option>
+            <option value="Lunchbox">Lunchbox / Container</option>
+            <option value="Clothing">Clothing / Jacket</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label for="attr-color-select">Primary Color:</label>
+          <select id="attr-color-select">
+            <option value="">Any color</option>
+            <option value="Black">Black</option>
+            <option value="White">White</option>
+            <option value="Silver">Silver / Grey</option>
+            <option value="Blue">Blue</option>
+            <option value="Navy Blue">Navy Blue</option>
+            <option value="Red">Red</option>
+            <option value="Green">Green</option>
+            <option value="Yellow">Yellow / Gold</option>
+            <option value="Brown">Brown</option>
+            <option value="Pink">Pink</option>
+            <option value="Purple">Purple</option>
+            <option value="Orange">Orange</option>
+            <option value="Maroon">Maroon</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label for="attr-shape-select">Shape:</label>
+          <select id="attr-shape-select">
+            <option value="">Any shape</option>
+            <option value="Rectangular">Rectangular</option>
+            <option value="Circular">Circular / Round</option>
+            <option value="Cylindrical">Cylindrical</option>
+            <option value="Square">Square</option>
+            <option value="Oval">Oval</option>
+            <option value="Rounded">Rounded</option>
+            <option value="Irregular">Irregular</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label for="attr-size-select">Physical Size:</label>
+          <select id="attr-size-select">
+            <option value="">Any size</option>
+            <option value="Small">Small / Pocket-sized</option>
+            <option value="Medium">Medium</option>
+            <option value="Large">Large / Bulky</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label for="attr-material-select">Material / Texture:</label>
+          <select id="attr-material-select">
+            <option value="">Any material</option>
+            <option value="Leather-like">Leather / Leatherette</option>
+            <option value="Fabric/Canvas">Fabric / Canvas / Nylon</option>
+            <option value="Plastic">Plastic</option>
+            <option value="Metal">Metal / Aluminum</option>
+            <option value="Transparent/Glass">Transparent / Glass</option>
+            <option value="Glossy">Glossy</option>
+            <option value="Matte">Matte</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label for="attr-distinctive-input">Distinctive Features:</label>
+          <input id="attr-distinctive-input" type="text" placeholder="e.g. Red keychain, Apple sticker, initials NJ">
+        </div>
+
+        <div class="filter-group full-width filter-mode-toggle">
+          <label class="checkbox-label">
+            <input type="checkbox" id="strict-hard-filter-chk">
+            <span>Strict hard filter (only return candidates strictly matching selected category/color/shape)</span>
+          </label>
+          <small class="hint-text">Leave unchecked to use soft preferences: candidate items with unknown attributes will remain eligible and be boosted appropriately.</small>
+        </div>
+      </div>
+    </div>
+
+    <div class="image-search-options">
+      <label>
+        Search in:
+        <select id="target-type-select">
+          <option value="found" selected>Found reports (I lost an item)</option>
+          <option value="lost">Lost reports (I found an item)</option>
+          <option value="">All active reports</option>
+        </select>
+      </label>
+
+      <button type="button" class="button" id="start-search-btn" style="margin-left:auto">
+        Search matching items <span>⌕</span>
+      </button>
+      <button type="button" class="button button-light" id="clear-search-btn" style="display:none">
+        Clear
+      </button>
+    </div>
+
+    <div class="form-error" id="search-error" role="alert"></div>
+  </div>
+
+  <div id="search-state" class="state-panel">
+    <div class="placeholder-icon">⌕</div>
+    <h3>Ready to search</h3>
+    <p>Select or drop one or more photos above to begin visual search.</p>
+  </div>
+
+  <div id="search-results-section" style="display:none">
+    <div class="section-heading">
+      <div>
+        <div class="eyebrow">RETRIEVED CANDIDATES</div>
+        <h2 id="results-headline">Matching reports</h2>
+        <p id="results-subhead">Ranked by CLIP visual similarity against candidate report photographs.</p>
+      </div>
+    </div>
+
+    <div id="results-grid" class="report-grid"></div>
+  </div>
+</section>
+{% endblock %}
+{% block scripts %}
+<script defer src="/static/js/image-search.js"></script>
+{% endblock %}

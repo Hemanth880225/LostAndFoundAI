@@ -1,0 +1,220 @@
+{% extends "base.html" %}
+{% block title %}My Reports & Case Tracking — Foundly{% endblock %}
+
+{% block content %}
+<section class="wrap tracking-page">
+  <div class="page-hero-text">
+    <div class="eyebrow">ACTIVITY & CASE STATUS</div>
+    <h1>Track reports and cases</h1>
+    <p class="lead">Check the live status of your lost-and-found reports, transit cases, and potential matches without requiring an account.</p>
+  </div>
+
+  <div class="tracking-grid">
+    <!-- Lookup by Report ID or Case Reference -->
+    <div class="panel tracking-card">
+      <div class="form-section-title">
+        <span class="section-count">🔍</span>
+        <div>
+          <h2>Direct Lookup</h2>
+          <p>Find any report, case, or claim using your reference number.</p>
+        </div>
+      </div>
+
+      <div class="lookup-tabs">
+        <button type="button" class="tab-btn active" id="tab-report-btn">Report ID</button>
+        <button type="button" class="tab-btn" id="tab-case-btn">Guest Case Reference</button>
+        <button type="button" class="tab-btn" id="tab-claim-btn">Claim ID</button>
+      </div>
+
+      <!-- Report Lookup Form -->
+      <form id="lookup-report-form" class="lookup-form">
+        <label class="field">
+          <span>Enter Report ID (numeric)</span>
+          <div class="input-with-button">
+            <input type="number" id="input-report-id" min="1" placeholder="e.g. 14" required>
+            <button type="submit" class="button button-small">View Report</button>
+          </div>
+        </label>
+      </form>
+
+      <!-- Case Lookup Form -->
+      <form id="lookup-case-form" class="lookup-form" style="display:none">
+        <label class="field">
+          <span>Case Reference</span>
+          <input type="text" id="input-case-ref" placeholder="e.g. CASE-2026-ABCD" required>
+        </label>
+        <label class="field">
+          <span>Secret Key (optional if already unlocked)</span>
+          <div class="input-with-button">
+            <input type="password" id="input-case-key" placeholder="Enter secret key from receipt…">
+            <button type="submit" class="button button-small">Open Case</button>
+          </div>
+        </label>
+      </form>
+
+      <!-- Claim Lookup Form -->
+      <form id="lookup-claim-form" class="lookup-form" style="display:none">
+        <label class="field">
+          <span>Enter Claim ID</span>
+          <div class="input-with-button">
+            <input type="number" id="input-claim-id" min="1" placeholder="e.g. 7" required>
+            <button type="submit" class="button button-small">Check Status</button>
+          </div>
+        </label>
+      </form>
+    </div>
+
+    <!-- Local Device History -->
+    <div class="panel tracking-card">
+      <div class="form-section-title">
+        <span class="section-count">📱</span>
+        <div>
+          <h2>Saved on this device</h2>
+          <p>Reports and cases created from your browser session.</p>
+        </div>
+      </div>
+
+      <div id="local-history-container">
+        <div class="loading-state">Checking saved device activity…</div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const tabReport = document.querySelector('#tab-report-btn');
+  const tabCase = document.querySelector('#tab-case-btn');
+  const tabClaim = document.querySelector('#tab-claim-btn');
+
+  const formReport = document.querySelector('#lookup-report-form');
+  const formCase = document.querySelector('#lookup-case-form');
+  const formClaim = document.querySelector('#lookup-claim-form');
+
+  tabReport.addEventListener('click', () => {
+    tabReport.classList.add('active');
+    tabCase.classList.remove('active');
+    tabClaim.classList.remove('active');
+    formReport.style.display = 'block';
+    formCase.style.display = 'none';
+    formClaim.style.display = 'none';
+  });
+
+  tabCase.addEventListener('click', () => {
+    tabCase.classList.add('active');
+    tabReport.classList.remove('active');
+    tabClaim.classList.remove('active');
+    formCase.style.display = 'block';
+    formReport.style.display = 'none';
+    formClaim.style.display = 'none';
+  });
+
+  tabClaim.addEventListener('click', () => {
+    tabClaim.classList.add('active');
+    tabReport.classList.remove('active');
+    tabCase.classList.remove('active');
+    formClaim.style.display = 'block';
+    formReport.style.display = 'none';
+    formCase.style.display = 'none';
+  });
+
+  formReport.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const id = document.querySelector('#input-report-id').value.trim();
+    if (id) location.assign(`/reports/${id}`);
+  });
+
+  formCase.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const ref = document.querySelector('#input-case-ref').value.trim();
+    const key = document.querySelector('#input-case-key').value.trim();
+    if (ref) {
+      const url = `/guest/case/${encodeURIComponent(ref)}${key ? `?key=${encodeURIComponent(key)}` : ''}`;
+      location.assign(url);
+    }
+  });
+
+  formClaim.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const id = document.querySelector('#input-claim-id').value.trim();
+    if (id) location.assign(`/claims/${id}`);
+  });
+
+  // Render local device history
+  const historyContainer = document.querySelector('#local-history-container');
+  const savedReports = Foundly.storage.getReports();
+  const savedCases = Foundly.storage.getGuestCases();
+  const savedClaims = Foundly.storage.getClaims();
+
+  if (!savedReports.length && !savedCases.length && !savedClaims.length) {
+    historyContainer.innerHTML = `
+      <div class="empty-state" style="padding:24px;border:none;">
+        <span class="placeholder-icon">📋</span>
+        <h3>No recent submissions on this device</h3>
+        <p>When you submit a report, case, or claim on this device, it will automatically appear here for easy tracking.</p>
+        <div style="display:flex;gap:10px;justify-content:center;margin-top:14px;">
+          <a class="button button-small" href="/report/lost">Report Lost Item</a>
+          <a class="button button-small button-light" href="/report/found">Report Found Item</a>
+        </div>
+      </div>
+    `;
+    return;
+  }
+
+  let html = '<div class="saved-items-list">';
+
+  if (savedReports.length > 0) {
+    html += '<h4 style="font-size:12px;color:#64748b;text-transform:uppercase;margin:0 0 8px;">My Reports</h4>';
+    savedReports.forEach(r => {
+      html += `
+        <div class="saved-item-row">
+          <div>
+            <strong>${Foundly.escape(r.name || `Report #${r.id}`)}</strong>
+            <small style="display:block;color:#94a3b8;">Report #${r.id} · ${Foundly.escape(r.type || '')} · ${Foundly.date(r.date)}</small>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <a class="button button-small button-light" href="/reports/${r.id}">View</a>
+            <a class="button button-small button-subtle" href="/reports/${r.id}/matches">Matches</a>
+          </div>
+        </div>
+      `;
+    });
+  }
+
+  if (savedCases.length > 0) {
+    html += '<h4 style="font-size:12px;color:#64748b;text-transform:uppercase;margin:16px 0 8px;">Guest Transit Cases</h4>';
+    savedCases.forEach(c => {
+      html += `
+        <div class="saved-item-row">
+          <div>
+            <strong>${Foundly.escape(c.caseRef)}</strong>
+            <small style="display:block;color:#94a3b8;">${Foundly.escape(c.name || 'Transit Case')} · ${Foundly.date(c.date)}</small>
+          </div>
+          <a class="button button-small button-light" href="/guest/case/${encodeURIComponent(c.caseRef)}${c.secretKey ? `?key=${encodeURIComponent(c.secretKey)}` : ''}">Open Case</a>
+        </div>
+      `;
+    });
+  }
+
+  if (savedClaims.length > 0) {
+    html += '<h4 style="font-size:12px;color:#64748b;text-transform:uppercase;margin:16px 0 8px;">Verified Claims</h4>';
+    savedClaims.forEach(cl => {
+      html += `
+        <div class="saved-item-row">
+          <div>
+            <strong>Claim #${cl.id}</strong>
+            <small style="display:block;color:#94a3b8;">Claimant: ${Foundly.escape(cl.claimantName || 'Self')} · Against Found Report #${cl.foundReportId}</small>
+          </div>
+          <a class="button button-small button-light" href="/claims/${cl.id}">Track Status</a>
+        </div>
+      `;
+    });
+  }
+
+  html += '</div>';
+  historyContainer.innerHTML = html;
+});
+</script>
+{% endblock %}

@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% block title %}Report Details — Foundly{% endblock %}
+
+{% block content %}
+<section class="wrap detail-page">
+  <a href="/browse" class="back-link">← Back to directory</a>
+
+  <div id="detail-state" class="state-panel">Loading report details…</div>
+
+  <div id="detail-content" class="detail-layout" data-id="{{ report_id }}" hidden>
+    <!-- Left Column: Primary Photo & Gallery Strip -->
+    <div class="detail-visual-col">
+      <div class="detail-image" id="detail-image">
+        <span class="image-placeholder">✳</span>
+      </div>
+      <div id="gallery-container"></div>
+    </div>
+
+    <!-- Right Column: Metadata, Facts, Attributes & Claim Form -->
+    <div class="detail-copy">
+      <div id="detail-badge"></div>
+      <h1 id="detail-name"></h1>
+      <p id="detail-meta" class="detail-meta"></p>
+
+      <div class="detail-divider"></div>
+
+      <!-- Detected Attributes Badge Section -->
+      <div id="detail-attributes-section" class="detail-attributes-card" style="display:none">
+        <div class="attr-header">
+          <span class="sparkle-icon">✨</span>
+          <strong>Physical Traits & Attributes</strong>
+        </div>
+        <div id="detail-attributes-chips" class="attr-chips-wrap"></div>
+      </div>
+
+      <h3>About this item</h3>
+      <p id="detail-description" class="detail-description"></p>
+
+      <div class="detail-facts" id="detail-facts"></div>
+
+      <!-- Action Buttons Row -->
+      <div class="detail-actions" id="detail-actions"></div>
+
+      <!-- Verified Claim Form (for Found Reports) -->
+      <form id="claim-form" class="panel claim-form" hidden>
+        <div class="form-section-title">
+          <span class="section-count">🛡️</span>
+          <div>
+            <h2>Make a verified ownership claim</h2>
+            <p>Provide private identifying details to initiate a secure campus verification process.</p>
+          </div>
+        </div>
+
+        <div class="claim-fields-grid">
+          <label class="field">
+            <span>Your lost report ID <span class="required">*</span></span>
+            <input name="lost_report_id" inputmode="numeric" required placeholder="The ID shown on your lost report">
+            <small class="field-hint">A claim links your existing lost report with this found report.</small>
+          </label>
+
+          <label class="field">
+            <span>Your full name <span class="required">*</span></span>
+            <input name="claimant_name" required minlength="2" maxlength="120" placeholder="e.g. Priya Sharma">
+          </label>
+
+          <label class="field">
+            <span>Email address <span class="required">*</span></span>
+            <input type="email" name="contact_email" required maxlength="254" placeholder="student@college.edu">
+          </label>
+
+          <label class="field">
+            <span>Phone number (Optional)</span>
+            <input type="tel" name="contact_phone" maxlength="30" placeholder="+91 98765 43210">
+          </label>
+
+          <label class="field field-wide">
+            <span>Why do you believe this is your item? <span class="required">*</span></span>
+            <textarea name="claim_message" required minlength="10" maxlength="2000" rows="3" placeholder="Describe when and where you lost it, contents, or circumstances."></textarea>
+          </label>
+
+          <label class="field">
+            <span>Serial number / IMEI / UUID (Optional)</span>
+            <input name="serial_number" maxlength="100" placeholder="e.g. SN-8921-X9">
+          </label>
+
+          <label class="field">
+            <span>Private marks or scratches (Optional)</span>
+            <input name="distinctive_marks" maxlength="200" placeholder="e.g. Sticker inside flap, chipped corner">
+          </label>
+
+          <label class="field field-wide">
+            <span>Attach proof of ownership (Optional)</span>
+            <input type="file" name="evidence_file" accept=".pdf,image/png,image/jpeg,image/webp">
+            <small class="field-hint">Purchase invoice, serial photo, or receipt (PDF/PNG/JPG up to 5MB). Stored securely outside public directories.</small>
+          </label>
+
+          <label class="checkbox-field field-wide">
+            <input type="checkbox" name="privacy_consent" checked required>
+            <span>I confirm this is my property and consent to verification by designated campus authorities under college policies.</span>
+          </label>
+        </div>
+
+        <div id="claim-error" class="form-error" role="alert"></div>
+
+        <button class="button" type="submit" id="btn-submit-claim">
+          <span>Submit Verified Claim</span>
+          <span aria-hidden="true">↗</span>
+        </button>
+      </form>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script defer src="/static/js/detail.js"></script>
+{% endblock %}
