@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f7f8fb"><title>{% block title %}Foundly — Lost & Found{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/app.css"><script defer src="/static/js/app.js"></script>
+  {% block head %}{% endblock %}
+</head>
+<body>
+<header class="topbar"><a class="brand" href="/"><span class="brand-mark">f</span><span>foundly<span class="brand-dot">.</span></span></a>
+  <nav class="nav" aria-label="Main navigation">
+    <a class="{% if active == 'home' %}active{% endif %}" href="/">Home</a><a class="{% if active == 'browse' %}active{% endif %}" href="/browse">Browse</a>
+    <a class="{% if active == 'help' %}active{% endif %}" href="/help">How it works</a>
+  </nav><div class="header-actions"><a class="nav-subtle" href="/my-reports">My reports</a><a class="button button-small" href="/report/lost">Report an item <span aria-hidden="true">↗</span></a><button class="menu-toggle" aria-label="Open menu" aria-expanded="false">☰</button></div>
+</header>
+<main>{% block content %}{% endblock %}</main>
+<footer class="footer"><a class="brand brand-footer" href="/"><span class="brand-mark">f</span><span>foundly<span class="brand-dot">.</span></span></a><span>Good things find their way back.</span><div><a href="/help">Safety & help</a><a href="/my-claims">My claims</a></div></footer>
+<div class="toast-region" aria-live="polite" aria-atomic="true"></div>
+{% block scripts %}{% endblock %}
+</body></html>

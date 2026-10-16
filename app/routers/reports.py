@@ -5,7 +5,13 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from sqlalchemy import select, func
+from sqlalchemy.orm import Session
+
+from app.db.database import get_db
+from app.db.models import ItemImage, ItemReport
+from app.services.matching_service import find_matches
 
 router = APIRouter(
     prefix="/api/reports",
@@ -56,3 +62,49 @@ class ItemReportResponse(BaseModel):
     longitude: float | None
     status: str
     created_at: datetime
+
+
+@router.post("", response_model=ItemReportResponse, status_code=status.HTTP_201_CREATED)
+def create_report(payload: ItemReportCreate, db: Session = Depends(get_db)):
+    report = ItemReport(**payload.model_dump())
+    db.add(report)
+    db.commit()
+    db.refresh(report)
+    return report
+
+
+@router.get("", response_model=list[ItemReportResponse])
+def list_reports(
+    report_type: Literal["lost", "found"] | None = None,
+    category: str | None = None,
+    limit: int = Query(default=24, ge=1, le=100),
+    offset: int = Query(default=0, ge=0),
+    db: Session = Depends(get_db),
+):
+    statement = select(ItemReport).where(ItemReport.status == "active")
+    if report_type:
+        statement = statement.where(ItemReport.report_type == report_type)
+    if category:
+        statement = statement.where(func.lower(ItemReport.category) == category.lower())
+    statement = statement.order_by(ItemReport.created_at.desc()).offset(offset).limit(limit)
+    return db.scalars(statement).all()
+
+
+@router.get("/{report_id}", response_model=ItemReportResponse)
+def get_report(report_id: int, db: Session = Depends(get_db)):
+    report = db.get(ItemReport, report_id)
+    if report is None:
+        raise HTTPException(status_code=404, detail="Report not found.")
+    return report
+
+
+@router.get("/{report_id}/matches")
+def report_matches(
+    report_id: int,
+    limit: int = Query(default=10, ge=1, le=50),
+    db: Session = Depends(get_db),
+):
+    try:
+        return find_matches(db, report_id, limit=limit)
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc

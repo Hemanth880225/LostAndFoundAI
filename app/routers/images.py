@@ -4,6 +4,8 @@ from pathlib import Path
 from uuid import uuid4
 
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
+from fastapi import Query
+from sqlalchemy import select
 from PIL import Image, UnidentifiedImageError
 from sqlalchemy.orm import Session
 
@@ -36,6 +38,14 @@ ALLOWED_FORMATS = {
     "PNG": ("png", "image/png"),
     "WEBP": ("webp", "image/webp"),
 }
+
+
+@router.get("/{report_id}/images")
+def list_report_images(report_id: int, db: Session = Depends(get_db)):
+    if db.get(ItemReport, report_id) is None:
+        raise HTTPException(status_code=404, detail="Report not found.")
+    records = db.scalars(select(ItemImage).where(ItemImage.report_id == report_id)).all()
+    return [{"id": image.id, "url": "/" + image.image_path.lstrip("/"), "content_type": image.content_type} for image in records]
 
 
 @router.post("/{report_id}/images", status_code=201)
